@@ -1,0 +1,138 @@
+# MythTV native LIRC config file for
+# Hauppage Nova-T-500 PCI Dual Tuners DVB-T
+# Snowboard shape remote
+# Silver on top Black underneath
+# 45 buttons
+#
+# Originally 
+# By Jarod Wilson, 2003/12/21
+# Amalgamated from Jeff Campbell's .lircrc
+
+
+
+################## MythTV Control ######################
+### http://www.mythtv.org/wiki/index.php/Keybindings ###
+
+#	Remote Button
+##	MythTV function
+
+
+#	Go
+##	Switch input
+begin
+prog = mythtv
+button = 'KEY_SELECT'
+config = CEC_SELECT
+end
+
+#	Power
+##	Turns on/off all devices
+begin
+prog = mythtv
+button = 'KEY_POWER'
+config = CEC_POWER
+end
+
+#	VolumeUp
+##	Volume Up
+begin
+prog = mythtv
+button = 'KEY_VOLUMEUP'
+config = CEC_VOLUP
+end
+
+#	VolumeDown
+##	Volume down
+begin
+prog = mythtv
+button = 'KEY_VOLUMEDOWN'
+config = CEC_VOLDOWN
+end
+
+#	Mute
+##	Mute
+begin
+prog = mythtv
+button = 'KEY_MUTE'
+config = CEC_MUTE
+end
+
+begin ps3
+
+#	ArrowUp
+##	Up
+begin
+prog = mythtv
+button = 'KEY_UP'
+repeat = 3
+config = CEC_UP
+end
+
+#	ArrowLeft
+##	Left
+begin
+prog = mythtv
+button = 'KEY_LEFT'
+repeat = 3
+config = CEC_LEFT
+end
+
+#	OK
+##	Select/enter/resolve
+begin
+prog = mythtv
+button = 'KEY_ENTER'
+config = CEC_OK
+end
+
+#	ArrowRight
+##	Right
+begin
+prog = mythtv
+button = 'KEY_RIGHT'
+repeat = 3
+config = CEC_RIGHT
+end
+
+#	ArrowDown
+##	Down
+begin
+prog = mythtv
+button = 'KEY_DOWN'
+repeat = 3
+config = CEC_DOWN
+end
+
+#	BackExit
+##	Exit/go back/cancel
+begin
+prog = mythtv
+button = 'KEY_EXIT'
+config = CEC_BACK
+end
+
+#	Menu
+##	Show Menu
+begin
+prog = mythtv
+button = 'KEY_MENU'
+config = CEC_HOLD
+end
+
+#	Guide
+##	Triangle
+begin
+prog = mythtv
+button = 'KEY_EPG'
+config = CEC_SETUP
+end
+
+#	Radio
+#	Show XMB
+begin
+prog = mythtv
+button = 'KEY_RADIO'
+config = CEC_MENU
+end
+
+end ps3

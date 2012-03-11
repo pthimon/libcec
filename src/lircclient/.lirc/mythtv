@@ -1,0 +1,351 @@
+# MythTV native LIRC config file for
+# Hauppage Nova-T-500 PCI Dual Tuners DVB-T
+# Snowboard shape remote
+# Silver on top Black underneath
+# 45 buttons
+#
+# Originally 
+# By Jarod Wilson, 2003/12/21
+# Amalgamated from Jeff Campbell's .lircrc
+
+
+
+################## MythTV Control ######################
+### http://www.mythtv.org/wiki/index.php/Keybindings ###
+
+#	Remote Button
+##	MythTV function
+
+begin myth
+
+#	TV
+##	Go to Watch TV
+begin
+prog = mythtv
+button = 'KEY_TV'
+config = ALT+T
+end
+
+#	Videos
+##	Go to MythVideo
+begin
+prog = mythtv
+button = 'KEY_VIDEO'
+config = ALT+V
+end
+
+#	Music
+##	Go to MythMusic
+begin
+prog = mythtv
+button = 'KEY_AUDIO'
+config = ALT+M
+end
+
+#	Pictures
+##	Go to MythGallery
+begin
+prog = mythtv
+button = 'KEY_MHP'
+config = V
+end
+
+#	Guide
+##	display EPG
+begin
+prog = mythtv
+button = 'KEY_EPG'
+config = s
+end
+
+#	Radio
+begin
+prog = mythtv
+button = 'KEY_RADIO'
+config = B
+end
+
+
+#	ArrowUp
+##	Up
+begin
+prog = mythtv
+button = 'KEY_UP'
+repeat = 3
+config = Up
+end
+
+#	ArrowLeft
+##	Left
+begin
+prog = mythtv
+button = 'KEY_LEFT'
+repeat = 3
+config = Left
+end
+
+#	OK
+##	Select/enter/resolve
+begin
+prog = mythtv
+button = 'KEY_ENTER'
+config = Space
+end
+
+#	ArrowRight
+##	Right
+begin
+prog = mythtv
+button = 'KEY_RIGHT'
+repeat = 3
+config = Right
+end
+
+#	ArrowDown
+##	Down
+begin
+prog = mythtv
+button = 'KEY_DOWN'
+repeat = 3
+config = Down
+end
+
+#	BackExit
+##	Exit/go back/cancel
+begin
+prog = mythtv
+button = 'KEY_EXIT'
+config = Esc
+end
+
+#	Menu
+##	Menu
+begin
+prog = mythtv
+button = 'KEY_MENU'
+config = m
+end
+
+#	VolumeUp
+##	Volume Up
+#begin
+#prog = mythtv
+#button = 'KEY_VOLUMEUP'
+#repeat = 3
+#config = ]
+#end
+
+#	VolumeDown
+##	Volume down
+#begin
+#prog = mythtv
+#button = 'KEY_VOLUMEDOWN'
+#repeat = 3
+#config = [
+#end
+
+#	PrevCh
+##	Change tuner card input
+begin
+prog = mythtv
+button = 'KEY_PREVIOUS'
+config = C
+end
+
+#	Mute
+##	Mute
+#begin
+#prog = mythtv
+#button = 'KEY_MUTE'
+#config = F9
+#end
+
+#	ChannelUp
+begin
+prog = mythtv
+button = 'KEY_CHANNELUP'
+repeat = 3
+config = Home
+end
+
+#	ChannelDown
+begin
+prog = mythtv
+button = 'KEY_CHANNELDOWN'
+repeat = 3
+config = End
+end
+
+#	Record
+begin
+prog = mythtv
+button = 'KEY_RECORD'
+config = R
+end
+
+#	Rewind
+begin
+prog = mythtv
+button = 'KEY_REWIND'
+config = <
+end
+
+#	SkipBack
+begin
+prog = mythtv
+button = 'KEY_PREVIOUSSONG'
+config = PgUp
+end
+
+#	Play
+begin
+prog = mythtv
+button = 'KEY_PLAY'
+config = Return
+end
+
+#	Pause
+begin
+prog = mythtv
+button = 'KEY_PAUSE'
+config = P
+end
+
+#	Stop
+begin
+prog = mythtv
+button = 'KEY_STOP'
+config = Esc
+end
+
+#	Fwdwind
+begin
+prog = mythtv
+button = 'KEY_FASTFORWARD'
+config = >
+end
+
+#	SkipFwd
+begin
+prog = mythtv
+button = 'KEY_NEXTSONG'
+config = PgDown
+end
+
+#	1
+begin
+prog = mythtv
+button = 'KEY_1'
+config = 1
+end
+
+#	2
+begin
+prog = mythtv
+button = 'KEY_2'
+config = 2
+end
+
+#	3
+begin
+prog = mythtv
+button = 'KEY_3'
+config = 3
+end
+
+#	4
+begin
+prog = mythtv
+button = 'KEY_4'
+config = 4
+end
+
+#	5
+begin
+prog = mythtv
+button = 'KEY_5'
+config = 5
+end
+
+#	6
+begin
+prog = mythtv
+button = 'KEY_6'
+config = 6
+end
+
+#	7
+begin
+prog = mythtv
+button = 'KEY_7'
+config = 7
+end
+
+#	8
+begin
+prog = mythtv
+button = 'KEY_8'
+config = 8
+end
+
+#	9
+begin
+prog = mythtv
+button = 'KEY_9'
+config = 9
+end
+
+#	Star
+##	Info
+begin
+prog = mythtv
+button = 'KEY_TEXT'
+config = F7
+end
+
+#	0
+begin
+prog = mythtv
+button = 'KEY_0'
+config = 0
+end
+
+#	#
+##	Subtitles
+begin
+prog = mythtv
+button = 'KEY_SUBTITLE'
+config = T
+end
+
+#	Red
+##	Picture zoom
+begin
+prog = mythtv
+button = 'KEY_RED'
+config = F2
+end
+
+#	Green
+#	OSD navigation through channels/programs
+begin
+prog = mythtv
+button = 'KEY_GREEN'
+config = F3
+end
+
+#	Yellow
+begin
+prog = mythtv
+button = 'KEY_YELLOW'
+config = F4
+end
+
+#	Blue
+begin
+prog = mythtv
+button = 'KEY_BLUE'
+config = F5
+end
+
+end myth
