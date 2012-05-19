@@ -1,5 +1,5 @@
-bin_PROGRAMS = cec-client
-cec_client_SOURCES = main.cpp
+bin_PROGRAMS = cec-lirc-client
+cec_lirc_client_SOURCES = main.cpp
 
-cec_client_CPPFLAGS = -I@abs_top_srcdir@/include
-cec_client_LDFLAGS = @LIBS_DL@ -llirc_client
+cec_lirc_client_CPPFLAGS = -I@abs_top_srcdir@/include
+cec_lirc_client_LDFLAGS = @LIBS_DL@ -llirc_client

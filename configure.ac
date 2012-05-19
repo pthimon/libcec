@@ -38,4 +38,4 @@ CXXFLAGS="-fPIC -Wall -Wextra -Wno-missing-field-initializers $CXXFLAGS"
 
 AC_SUBST(REQUIRES)
 AC_CONFIG_FILES([src/lib/libcec.pc])
-AC_OUTPUT([Makefile src/lib/Makefile src/testclient/Makefile src/cec-config/Makefile])
+AC_OUTPUT([Makefile src/lib/Makefile src/testclient/Makefile src/cec-config/Makefile src/lircclient/Makefile])
