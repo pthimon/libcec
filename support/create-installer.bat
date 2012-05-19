@@ -1,15 +1,13 @@
 @echo off
 
+set EXITCODE=1
+
 rem Check for NSIS
 IF EXIST "%ProgramFiles%\NSIS\makensis.exe" (
   set NSIS="%ProgramFiles%\NSIS\makensis.exe"
 ) ELSE IF EXIST "%ProgramFiles(x86)%\NSIS\makensis.exe" (
   set NSIS="%ProgramFiles(x86)%\NSIS\makensis.exe"
 ) ELSE GOTO NONSIS
-
-rem Check for the Windows DDK
-IF NOT EXIST "C:\WinDDK\7600.16385.1" GOTO NODDK
-set DDK="C:\WinDDK\7600.16385.1"
 
 rem Check for VC10
 IF "%VS100COMNTOOLS%"=="" (
@@ -26,6 +24,10 @@ mkdir ..\build
 IF EXIST "..\support\p8-usbcec-driver-installer.exe" (
   copy "..\support\p8-usbcec-driver-installer.exe" "..\build\."
 ) ELSE (
+  rem Check for the Windows DDK
+  IF NOT EXIST "C:\WinDDK\7600.16385.1" GOTO NODDK
+  set DDK="C:\WinDDK\7600.16385.1"
+
   call create-driver-installer.cmd
 )
 
@@ -56,8 +58,6 @@ echo. Compiling cec-client (x86)
 rem Check for VC9
 IF "%VS90COMNTOOLS%"=="" (
   set COMPILER9="%ProgramFiles%\Microsoft Visual Studio 9.0\Common7\IDE\VCExpress.exe"
-) ELSE IF EXIST "%VS90COMNTOOLS%\..\IDE\VCExpress.exe" (
-  set COMPILER9="%VS90COMNTOOLS%\..\IDE\VCExpress.exe"
 ) ELSE IF EXIST "%VS90COMNTOOLS%\..\IDE\devenv.exe" (
   set COMPILER9="%VS90COMNTOOLS%\..\IDE\devenv.exe"
 ) ELSE GOTO NOSDK9
@@ -127,8 +127,14 @@ IF EXIST "..\support\private\sign-binary.cmd" (
   CALL ..\support\private\sign-binary.cmd ..\build\libCEC-installer.exe
 )
 
-echo. The installer can be found here: ..\build\libCEC-installer.exe
+IF "%1%"=="" (
+  echo. The installer can be found here: ..\build\libCEC-installer.exe
+) ELSE (
+  move ..\build\libCEC-installer.exe ..\build\libCEC-%1%-installer.exe
+  echo. The installer can be found here: ..\build\libCEC-%1%-installer.exe
+)
 
+set EXITCODE=0
 GOTO EXIT
 
 :NOSDK10
@@ -156,3 +162,10 @@ del /q /f ..\build\*.exp
 del /s /f /q ..\build\x64
 rmdir ..\build\x64
 cd ..\support
+
+IF "%1%"=="" (
+  echo. exitcode = %EXITCODE%
+) ELSE (
+  exit %EXITCODE%
+)
+
