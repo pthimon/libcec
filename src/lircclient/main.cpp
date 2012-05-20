@@ -41,6 +41,15 @@
 #include "../lib/platform/os.h"
 #include "../lib/implementations/CECCommandHandler.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> 
+
 using namespace CEC;
 using namespace std;
 using namespace PLATFORM;
@@ -59,6 +68,7 @@ bool                 g_bSingleCommand(false);
 bool                 g_bExit(false);
 bool                 g_bHardExit(false);
 CMutex               g_outputMutex;
+int		     g_mythfrontendSock;
 
 inline void PrintToStdOut(const char *strFormat, ...)
 {
@@ -172,8 +182,30 @@ int CecKeyPress(void *UNUSED(cbParam), const cec_keypress &UNUSED(key))
   return 0;
 }
 
-int CecCommand(void *UNUSED(cbParam), const cec_command &UNUSED(command))
+// Display the volume on mythfrontend
+void displayVolume(int vol) {
+  char buffer[256];
+  sprintf(buffer, "play volume %d%%\n", vol);
+  int n = write(g_mythfrontendSock,buffer,strlen(buffer));
+  if (n < 0) 
+    PrintToStdOut("ERROR writing to socket");
+  
+  bzero(buffer,256);
+  n = read(g_mythfrontendSock,buffer,255);
+  if (n < 0) 
+    PrintToStdOut("ERROR reading from socket");
+}
+
+int CecCommand(void *UNUSED(cbParam), const cec_command &command)
 {
+  if (command.opcode == CEC_OPCODE_REPORT_AUDIO_STATUS) {
+    // when the audio system reports the audio status to the TV, display the volume through mythfrontend
+    int vol = command.parameters[0];
+    CStdString cmd;
+    cmd.Format("Got volume: %d", vol);
+    PrintToStdOut(cmd.c_str());
+    displayVolume(vol);
+  }
   return 0;
 }
 
@@ -1084,6 +1116,31 @@ bool ProcessCommandLineArguments(int argc, char *argv[])
   return bReturn;
 }
 
+// Open a connection to the mythfrontend control interface
+void connectMythFrontend() {
+  struct sockaddr_in serv_addr;
+  struct hostent *server;
+  g_mythfrontendSock = socket(AF_INET, SOCK_STREAM, 0);
+  server = gethostbyname("localhost");
+  bzero((char *) &serv_addr, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  bcopy((char *)server->h_addr, 
+         (char *)&serv_addr.sin_addr.s_addr,
+         server->h_length);
+  serv_addr.sin_port = htons(6546);
+  
+  if (connect(g_mythfrontendSock,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
+    PrintToStdOut("ERROR connecting");
+  
+  char buffer[256];  
+  bzero(buffer,256);
+  int n = read(g_mythfrontendSock,buffer,255);
+  if (n < 0) 
+    PrintToStdOut("ERROR reading from socket");
+  else
+    PrintToStdOut("Connected to Mythfrontend");
+}
+
 int main (int argc, char *argv[])
 {
   g_config.Clear();
@@ -1173,6 +1230,8 @@ int main (int argc, char *argv[])
   if (fd == -1) {
       cout << "Lirc initialisation failed" << endl;
   }
+  
+  connectMythFrontend();
 
   struct lirc_config *config;
   if(lirc_readconfig(NULL,&config,NULL)==0)
@@ -1268,6 +1327,8 @@ int main (int argc, char *argv[])
       }
       lirc_freeconfig(config);
   }
+  
+  close(g_mythfrontendSock);
   
   lirc_deinit();
 
