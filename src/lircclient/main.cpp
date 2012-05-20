@@ -39,6 +39,7 @@
 #include <string>
 #include <sstream>
 #include "../lib/platform/os.h"
+#include "../lib/platform/threads/mutex.h"
 #include "../lib/implementations/CECCommandHandler.h"
 
 #include <stdio.h>
@@ -69,6 +70,7 @@ bool                 g_bExit(false);
 bool                 g_bHardExit(false);
 CMutex               g_outputMutex;
 int		     g_mythfrontendSock;
+PLATFORM::CMutex     g_mutex;
 
 inline void PrintToStdOut(const char *strFormat, ...)
 {
@@ -183,23 +185,24 @@ int CecKeyPress(void *UNUSED(cbParam), const cec_keypress &UNUSED(key))
 }
 
 // Display the volume on mythfrontend
-void displayVolume(int vol) {
+void displayVolume(int vol) {  
+  if (vol & 0x80) {
+    // mute
+    vol = 0;
+  }
+  
   char buffer[256];
   sprintf(buffer, "play volume %d%%\n", vol);
-  int n = write(g_mythfrontendSock,buffer,strlen(buffer));
-  if (n < 0) 
-    PrintToStdOut("ERROR writing to socket");
   
-  bzero(buffer,256);
-  n = read(g_mythfrontendSock,buffer,255);
-  if (n < 0) 
-    PrintToStdOut("ERROR reading from socket");
+  CLockObject lock(g_mutex);
+  write(g_mythfrontendSock,buffer,strlen(buffer));  
+  read(g_mythfrontendSock,buffer,255);
 }
 
 int CecCommand(void *UNUSED(cbParam), const cec_command &command)
 {
   if (command.opcode == CEC_OPCODE_REPORT_AUDIO_STATUS) {
-    // when the audio system reports the audio status to the TV, display the volume through mythfrontend
+    // when the audio system reports the audio status to the TV, display the volume through mythfrontend	
     int vol = command.parameters[0];
     CStdString cmd;
     cmd.Format("Got volume: %d", vol);
@@ -1276,15 +1279,11 @@ int main (int argc, char *argv[])
               } 
               // Amp controls
               else if (strcmp(c,"CEC_VOLUP")==0) {
-                  // Note: parser->VolumeUp() doesn't work well with my Sony AVAmp as only one press can be sent at once
-                  // whereas the device needs two volume up commands to change the volume (the first just shows the current volume)
-                  parser->SendKeypress(CEC::CECDEVICE_AUDIOSYSTEM, CEC::CEC_USER_CONTROL_CODE_VOLUME_UP, false);
-                  parser->SendKeyRelease(CEC::CECDEVICE_AUDIOSYSTEM, false);
+                  displayVolume(parser->VolumeUp());
               } else if (strcmp(c,"CEC_VOLDOWN")==0) {
-                  parser->SendKeypress(CEC::CECDEVICE_AUDIOSYSTEM, CEC::CEC_USER_CONTROL_CODE_VOLUME_DOWN, false);
-                  parser->SendKeyRelease(CEC::CECDEVICE_AUDIOSYSTEM, false);
+		  displayVolume(parser->VolumeDown());
               } else if (strcmp(c,"CEC_MUTE")==0) {
-                  parser->MuteAudio();
+                  displayVolume(parser->MuteAudio());
               }
               // Playstation controls
               else if (strcmp(c,"CEC_UP")==0) {
