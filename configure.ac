@@ -1,4 +1,4 @@
-AC_INIT([libcec], 1:5:0)
+AC_INIT([libcec], 1:6:0)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 AC_PROG_CXX
@@ -7,7 +7,7 @@ AC_PROG_LIBTOOL
 has_libudev="yes"
 case "${host}" in
   *-*-linux*)
-    PKG_CHECK_MODULES([UDEV],[libudev],,[has_libudev="no";AC_MSG_WARN("library 'udev' is missing - adapter detection will not be available")])
+    PKG_CHECK_MODULES([UDEV],[libudev],,[has_libudev="no"]; AC_MSG_WARN("library 'udev' is missing - adapter detection will not be available"))
     LIBS+=" -lrt"
     ;;
   *-apple-darwin*)
@@ -38,4 +38,4 @@ CXXFLAGS="-fPIC -Wall -Wextra -Wno-missing-field-initializers $CXXFLAGS"
 
 AC_SUBST(REQUIRES)
 AC_CONFIG_FILES([src/lib/libcec.pc])
-AC_OUTPUT([Makefile src/lib/Makefile src/testclient/Makefile src/cec-config/Makefile])
+AC_OUTPUT([Makefile src/lib/Makefile src/testclient/Makefile src/cec-config/Makefile src/lircclient/Makefile])

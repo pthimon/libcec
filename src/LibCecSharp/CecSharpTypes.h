@@ -83,6 +83,29 @@ namespace CecSharp
 		Broadcast        = 15
 	};
 
+	public enum class CecAlert
+	{
+		ServiceDevice = 1
+	};
+
+	public enum class CecParameterType
+	{
+		ParameterTypeString = 1
+	};
+
+	public ref class CecParameter
+	{
+	public:
+		CecParameter(CecParameterType type, System::String ^ strData)
+		{
+			Type = type;
+			Data = strData;
+		}
+
+		property CecParameterType Type;
+		property System::String ^ Data;
+	};
+
 	public enum class CecPowerStatus
 	{
 		On                      = 0x00,
@@ -327,16 +350,24 @@ namespace CecSharp
 	{
 		VersionPre1_5 = 0,
 		Version1_5_0  = 0x1500,
-    Version1_5_1  = 0x1501,
-    Version1_5_2  = 0x1502
+		Version1_5_1  = 0x1501,
+		Version1_5_2  = 0x1502,
+		Version1_5_3  = 0x1503,
+		Version1_6_0  = 0x1600,
+		Version1_6_1  = 0x1601,
+    Version1_6_2  = 0x1602
 	};
 
-  public enum class CecServerVersion
+	public enum class CecServerVersion
 	{
 		VersionPre1_5 = 0,
 		Version1_5_0  = 0x1500,
-    Version1_5_1  = 0x1501,
-    Version1_5_2  = 0x1502
+		Version1_5_1  = 0x1501,
+		Version1_5_2  = 0x1502,
+		Version1_5_3  = 0x1503,
+		Version1_6_0  = 0x1600,
+		Version1_6_1  = 0x1601,
+    Version1_6_2  = 0x1602
 	};
 
 	public ref class CecAdapter
@@ -551,7 +582,13 @@ namespace CecSharp
 
 			PowerOffScreensaver = CEC_DEFAULT_SETTING_POWER_OFF_SCREENSAVER == 1;
 			PowerOffOnStandby   = CEC_DEFAULT_SETTING_POWER_OFF_ON_STANDBY == 1;
-      SendInactiveSource  = CEC_DEFAULT_SETTING_SEND_INACTIVE_SOURCE == 1;
+
+			SendInactiveSource  = CEC_DEFAULT_SETTING_SEND_INACTIVE_SOURCE == 1;
+			LogicalAddresses    = gcnew CecLogicalAddresses();
+			FirmwareVersion     = 1;
+			PowerOffDevicesOnStandby = CEC_DEFAULT_SETTING_POWER_OFF_DEVICES_STANDBY == 1;
+			ShutdownOnStandby   = CEC_DEFAULT_SETTING_SHUTDOWN_ON_STANDBY == 1;
+			DeviceLanguage      = "";
 		}
 
 		void SetCallbacks(CecCallbackMethods ^callbacks)
@@ -591,7 +628,27 @@ namespace CecSharp
 
 			PowerOffScreensaver = config.bPowerOffScreensaver == 1;
 			PowerOffOnStandby = config.bPowerOffOnStandby == 1;
-      SendInactiveSource = config.bSendInactiveSource == 1;
+
+			if (ServerVersion >= CecServerVersion::Version1_5_1)
+				SendInactiveSource = config.bSendInactiveSource == 1;
+
+			if (ServerVersion >= CecServerVersion::Version1_5_3)
+			{
+				LogicalAddresses->Clear();
+				for (uint8_t iPtr = 0; iPtr <= 16; iPtr++)
+					if (config.logicalAddresses[iPtr])
+						LogicalAddresses->Set((CecLogicalAddress)iPtr);
+			}
+
+			if (ServerVersion >= CecServerVersion::Version1_6_0)
+			{
+				FirmwareVersion          = config.iFirmwareVersion;
+				PowerOffDevicesOnStandby = config.bPowerOffDevicesOnStandby == 1;
+				ShutdownOnStandby        = config.bShutdownOnStandby == 1;
+			}
+
+			if (ServerVersion >= CecServerVersion::Version1_6_2)
+				DeviceLanguage = gcnew System::String(config.strDeviceLanguage);
 		}
 
 		property System::String ^     DeviceName;
@@ -612,8 +669,12 @@ namespace CecSharp
 		property CecLogicalAddresses ^PowerOffDevices;
 		property bool                 PowerOffScreensaver;
 		property bool                 PowerOffOnStandby;
-    property bool                 SendInactiveSource;
-
+		property bool                 SendInactiveSource;
+		property CecLogicalAddresses ^LogicalAddresses;
+		property uint16_t             FirmwareVersion;
+		property bool                 PowerOffDevicesOnStandby;
+		property bool                 ShutdownOnStandby;
+		property System::String ^     DeviceLanguage;
 		property CecCallbackMethods ^ Callbacks;
 	};
 
@@ -624,11 +685,15 @@ namespace CecSharp
 	typedef int (__stdcall *KEYCB)    (const CEC::cec_keypress &key);
 	typedef int (__stdcall *COMMANDCB)(const CEC::cec_command &command);
 	typedef int (__stdcall *CONFIGCB) (const CEC::libcec_configuration &config);
+	typedef int (__stdcall *ALERTCB)  (const CEC::libcec_alert, const CEC::libcec_parameter &data);
+	typedef int (__stdcall *MENUCB)   (const CEC::cec_menu_state newVal);
 
 	static LOGCB              g_logCB;
 	static KEYCB              g_keyCB;
 	static COMMANDCB          g_commandCB;
 	static CONFIGCB           g_configCB;
+	static ALERTCB            g_alertCB;
+	static MENUCB             g_menuCB;
 	static CEC::ICECCallbacks g_cecCallbacks;
 
 	int CecLogMessageCB(void *cbParam, const CEC::cec_log_message &message)
@@ -659,12 +724,28 @@ namespace CecSharp
 		return 0;
 	}
 
+	int CecAlertCB(void *cbParam, const CEC::libcec_alert alert, const CEC::libcec_parameter &data)
+	{
+		if (g_alertCB)
+			return g_alertCB(alert, data);
+		return 0;
+	}
+
+	int CecMenuCB(void *cbParam, const CEC::cec_menu_state newVal)
+	{
+		if (g_menuCB)
+			return g_menuCB(newVal);
+		return 0;
+	}
+
 	#pragma managed
 	// delegates for the unmanaged callback methods
 	public delegate int CecLogMessageManagedDelegate(const CEC::cec_log_message &);
 	public delegate int CecKeyPressManagedDelegate(const CEC::cec_keypress &);
 	public delegate int CecCommandManagedDelegate(const CEC::cec_command &);
 	public delegate int CecConfigManagedDelegate(const CEC::libcec_configuration &);
+	public delegate int CecAlertManagedDelegate(const CEC::libcec_alert, const CEC::libcec_parameter &);
+	public delegate int CecMenuManagedDelegate(const CEC::cec_menu_state newVal);
 
 	// callback method interface
 	public ref class CecCallbackMethods
@@ -725,6 +806,17 @@ namespace CecSharp
 		{
 			return 0;
 		}
+
+		virtual int ReceiveAlert(CecAlert alert, CecParameter ^ data)
+		{
+			return 0;
+		}
+
+		virtual int ReceiveMenuStateChange(CecMenuState newVal)
+		{
+			return 0;
+		}
+
 	protected:
 		// managed callback methods
 		int CecLogMessageManaged(const CEC::cec_log_message &message)
@@ -768,6 +860,32 @@ namespace CecSharp
 			return iReturn;
 		}
 
+		int CecAlertManaged(const CEC::libcec_alert alert, const CEC::libcec_parameter &data)
+		{
+			int iReturn(0);
+			if (m_bHasCallbacks)
+			{
+				CecParameterType newType = (CecParameterType)data.paramType;
+				if (newType == CecParameterType::ParameterTypeString)
+				{
+					System::String ^ newData = gcnew System::String((const char *)data.paramData, 0, 128);
+					CecParameter ^ newParam = gcnew CecParameter(newType, newData);
+				    iReturn = m_callbacks->ReceiveAlert((CecAlert)alert, newParam);
+				}
+			}
+			return iReturn;
+		}
+
+		int CecMenuManaged(const CEC::cec_menu_state newVal)
+		{
+			int iReturn(0);
+			if (m_bHasCallbacks)
+			{
+				iReturn = m_callbacks->ReceiveMenuStateChange((CecMenuState)newVal);
+			}
+			return iReturn;
+		}
+
 		void DestroyDelegates()
 		{
       m_bHasCallbacks = false;
@@ -777,6 +895,8 @@ namespace CecSharp
 				m_logMessageGCHandle.Free();
 				m_keypressGCHandle.Free();
 				m_commandGCHandle.Free();
+				m_alertGCHandle.Free();
+				m_menuGCHandle.Free();
 			}
 		}
 
@@ -812,6 +932,18 @@ namespace CecSharp
         g_configCB                  = static_cast<CONFIGCB>(System::Runtime::InteropServices::Marshal::GetFunctionPointerForDelegate(m_configDelegate).ToPointer());
         g_cecCallbacks.CBCecConfigurationChanged = CecConfigCB;
 
+        // create the delegate method for the alert callback
+        m_alertDelegate            = gcnew CecAlertManagedDelegate(this, &CecCallbackMethods::CecAlertManaged);
+        m_alertGCHandle            = System::Runtime::InteropServices::GCHandle::Alloc(m_alertDelegate);
+        g_alertCB                  = static_cast<ALERTCB>(System::Runtime::InteropServices::Marshal::GetFunctionPointerForDelegate(m_alertDelegate).ToPointer());
+        g_cecCallbacks.CBCecAlert  = CecAlertCB;
+
+        // create the delegate method for the menu callback
+        m_menuDelegate             = gcnew CecMenuManagedDelegate(this, &CecCallbackMethods::CecMenuManaged);
+        m_menuGCHandle             = System::Runtime::InteropServices::GCHandle::Alloc(m_menuDelegate);
+        g_menuCB                   = static_cast<MENUCB>(System::Runtime::InteropServices::Marshal::GetFunctionPointerForDelegate(m_menuDelegate).ToPointer());
+        g_cecCallbacks.CBCecMenuStateChanged = CecMenuCB;
+
         delete context;
         m_bDelegatesCreated = true;
       }
@@ -832,6 +964,14 @@ namespace CecSharp
 	  CecConfigManagedDelegate ^                        m_configDelegate;
 		static System::Runtime::InteropServices::GCHandle m_configGCHandle;
 		CONFIGCB                                          m_configCallback;
+
+		CecAlertManagedDelegate ^                         m_alertDelegate;
+		static System::Runtime::InteropServices::GCHandle m_alertGCHandle;
+		CONFIGCB                                          m_alertCallback;
+
+		CecMenuManagedDelegate ^                          m_menuDelegate;
+		static System::Runtime::InteropServices::GCHandle m_menuGCHandle;
+		MENUCB                                            m_menuCallback;
 
 		CecCallbackMethods ^ m_callbacks;
 	  bool                 m_bHasCallbacks;

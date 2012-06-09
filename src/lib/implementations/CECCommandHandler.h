@@ -77,7 +77,7 @@ namespace CEC
       m_waitingFor.clear();
     }
 
-    bool Wait(cec_opcode opcode, uint32_t iTimeout = 2000)
+    bool Wait(cec_opcode opcode, uint32_t iTimeout = CEC_DEFAULT_TRANSMIT_WAIT)
     {
       CResponse *response = GetEvent(opcode);
       return response ? response->Wait(iTimeout) : false;
@@ -132,12 +132,13 @@ namespace CEC
     virtual bool PowerOn(const cec_logical_address iInitiator, const cec_logical_address iDestination);
     virtual bool TransmitImageViewOn(const cec_logical_address iInitiator, const cec_logical_address iDestination);
     virtual bool TransmitStandby(const cec_logical_address iInitiator, const cec_logical_address iDestination);
-    virtual bool TransmitRequestCecVersion(const cec_logical_address iInitiator, const cec_logical_address iDestination);
-    virtual bool TransmitRequestMenuLanguage(const cec_logical_address iInitiator, const cec_logical_address iDestination);
-    virtual bool TransmitRequestOSDName(const cec_logical_address iInitiator, const cec_logical_address iDestination);
-    virtual bool TransmitRequestPhysicalAddress(const cec_logical_address iInitiator, const cec_logical_address iDestination);
-    virtual bool TransmitRequestPowerStatus(const cec_logical_address iInitiator, const cec_logical_address iDestination);
-    virtual bool TransmitRequestVendorId(const cec_logical_address iInitiator, const cec_logical_address iDestination);
+    virtual bool TransmitRequestActiveSource(const cec_logical_address iInitiator, bool bWaitForResponse = true);
+    virtual bool TransmitRequestCecVersion(const cec_logical_address iInitiator, const cec_logical_address iDestination, bool bWaitForResponse = true);
+    virtual bool TransmitRequestMenuLanguage(const cec_logical_address iInitiator, const cec_logical_address iDestination, bool bWaitForResponse = true);
+    virtual bool TransmitRequestOSDName(const cec_logical_address iInitiator, const cec_logical_address iDestination, bool bWaitForResponse = true);
+    virtual bool TransmitRequestPhysicalAddress(const cec_logical_address iInitiator, const cec_logical_address iDestination, bool bWaitForResponse = true);
+    virtual bool TransmitRequestPowerStatus(const cec_logical_address iInitiator, const cec_logical_address iDestination, bool bWaitForResponse = true);
+    virtual bool TransmitRequestVendorId(const cec_logical_address iInitiator, const cec_logical_address iDestination, bool bWaitForResponse = true);
     virtual bool TransmitActiveSource(const cec_logical_address iInitiator, uint16_t iPhysicalAddress);
     virtual bool TransmitCECVersion(const cec_logical_address iInitiator, const cec_logical_address iDestination, cec_version cecVersion);
     virtual bool TransmitInactiveSource(const cec_logical_address iInitiator, uint16_t iPhysicalAddress);
@@ -145,6 +146,7 @@ namespace CEC
     virtual bool TransmitOSDName(const cec_logical_address iInitiator, const cec_logical_address iDestination, CStdString strDeviceName);
     virtual bool TransmitOSDString(const cec_logical_address iInitiator, const cec_logical_address iDestination, cec_display_control duration, const char *strMessage);
     virtual bool TransmitPhysicalAddress(const cec_logical_address iInitiator, uint16_t iPhysicalAddress, cec_device_type type);
+    virtual bool TransmitSetMenuLanguage(const cec_logical_address iInitiator, const char lang[3]);
     virtual bool TransmitPoll(const cec_logical_address iInitiator, const cec_logical_address iDestination);
     virtual bool TransmitPowerState(const cec_logical_address iInitiator, const cec_logical_address iDestination, cec_power_status state);
     virtual bool TransmitVendorID(const cec_logical_address iInitiator, uint64_t iVendorId);
@@ -156,6 +158,9 @@ namespace CEC
     virtual bool TransmitKeyRelease(const cec_logical_address iInitiator, const cec_logical_address iDestination, bool bWait = true);
     virtual bool TransmitSetStreamPath(uint16_t iStreamPath);
     virtual bool SendDeckStatusUpdateOnActiveSource(void) const { return m_bOPTSendDeckStatusUpdateOnActiveSource; };
+    virtual bool TransmitPendingActiveSourceCommands(void) { return true; }
+
+    virtual void SignalOpcode(cec_opcode opcode);
 
   protected:
     virtual bool HandleActiveSource(const cec_command &command);
@@ -171,9 +176,11 @@ namespace CEC
     virtual bool HandleGiveDeviceVendorId(const cec_command &command);
     virtual bool HandleGiveOSDName(const cec_command &command);
     virtual bool HandleGivePhysicalAddress(const cec_command &command);
+    virtual bool HandleGiveMenuLanguage(const cec_command &command);
     virtual bool HandleGiveSystemAudioModeStatus(const cec_command &command);
     virtual bool HandleImageViewOn(const cec_command &command);
     virtual bool HandleMenuRequest(const cec_command &command);
+    virtual bool HandlePoll(const cec_command &command);
     virtual bool HandleReportAudioStatus(const cec_command &command);
     virtual bool HandleReportPhysicalAddress(const cec_command &command);
     virtual bool HandleReportPowerStatus(const cec_command &command);
@@ -201,7 +208,7 @@ namespace CEC
     virtual bool SetVendorId(const cec_command &command);
     virtual void SetPhysicalAddress(cec_logical_address iAddress, uint16_t iNewAddress);
 
-    virtual bool Transmit(cec_command &command, bool bExpectResponse = true, cec_opcode expectedResponse = CEC_OPCODE_NONE);
+    virtual bool Transmit(cec_command &command, bool bSuppressWait = false);
 
     CCECBusDevice *                       m_busDevice;
     CCECProcessor *                       m_processor;

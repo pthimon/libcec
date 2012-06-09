@@ -39,7 +39,17 @@
 #include <string>
 #include <sstream>
 #include "../lib/platform/os.h"
+#include "../lib/platform/threads/mutex.h"
 #include "../lib/implementations/CECCommandHandler.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> 
 
 using namespace CEC;
 using namespace std;
@@ -59,6 +69,8 @@ bool                 g_bSingleCommand(false);
 bool                 g_bExit(false);
 bool                 g_bHardExit(false);
 CMutex               g_outputMutex;
+int		     g_mythfrontendSock;
+PLATFORM::CMutex     g_mutex;
 
 inline void PrintToStdOut(const char *strFormat, ...)
 {
@@ -172,18 +184,46 @@ int CecKeyPress(void *UNUSED(cbParam), const cec_keypress &UNUSED(key))
   return 0;
 }
 
-int CecCommand(void *UNUSED(cbParam), const cec_command &UNUSED(command))
+// Display the volume on mythfrontend
+void displayVolume(int vol) {  
+  if (vol & 0x80) {
+    // mute
+    vol = 0;
+  }
+  
+  char buffer[256];
+  sprintf(buffer, "play volume %d%%\n", vol);
+  
+  CLockObject lock(g_mutex);
+  write(g_mythfrontendSock,buffer,strlen(buffer));  
+  read(g_mythfrontendSock,buffer,255);
+}
+
+int CecCommand(void *UNUSED(cbParam), const cec_command &command)
 {
+  if (command.opcode == CEC_OPCODE_REPORT_AUDIO_STATUS) {
+    // when the audio system reports the audio status to the TV, display the volume through mythfrontend	
+    int vol = command.parameters[0];
+    CStdString cmd;
+    cmd.Format("Got volume: %d", vol);
+    PrintToStdOut(cmd.c_str());
+    displayVolume(vol);
+  }
   return 0;
 }
 
-void EnableCallbacks(ICECAdapter *adapter)
+int CecAlert(void *UNUSED(cbParam), const libcec_alert type, const libcec_parameter &UNUSED(param))
 {
-  g_callbacks.CBCecLogMessage = &CecLogMessage;
-  g_callbacks.CBCecKeyPress   = &CecKeyPress;
-  g_callbacks.CBCecCommand    = &CecCommand;
-  g_callbacks.CBCecConfigurationChanged = NULL;
-  adapter->EnableCallbacks(NULL, &g_callbacks);
+  switch (type)
+  {
+  case CEC_ALERT_CONNECTION_LOST:
+    PrintToStdOut("Connection lost - exiting\n");
+    g_bExit = true;
+    break;
+  default:
+    break;
+  }
+  return 0;
 }
 
 void ListDevices(ICECAdapter *parser)
@@ -196,9 +236,32 @@ void ListDevices(ICECAdapter *parser)
   }
   else
   {
-    PrintToStdOut("Found devices: %d\n", iDevicesFound);
+    CStdString strDeviceInfo;
+    strDeviceInfo.Format("Found devices: %d\n\n", iDevicesFound);
+
     for (int8_t iDevicePtr = 0; iDevicePtr < iDevicesFound; iDevicePtr++)
-      PrintToStdOut("device:        %d\npath:          %s\ncom port:      %s\n", iDevicePtr + 1, devices[iDevicePtr].path, devices[iDevicePtr].comm);
+    {
+      strDeviceInfo.AppendFormat("device:              %d\ncom port:            %s\n", iDevicePtr + 1, devices[iDevicePtr].comm);
+      libcec_configuration config;
+      config.Clear();
+
+      if (!parser->GetDeviceInformation(devices[iDevicePtr].comm, &config))
+        PrintToStdOut("WARNING: unable to open the device on port %s", devices[iDevicePtr].comm);
+      else
+      {
+        strDeviceInfo.AppendFormat("firmware version:    %d\n", config.iFirmwareVersion);
+
+        if (config.iFirmwareBuildDate != CEC_FW_BUILD_UNKNOWN)
+        {
+          time_t buildTime = (time_t)config.iFirmwareBuildDate;
+          strDeviceInfo.AppendFormat("firmware build date: %s", asctime(gmtime(&buildTime)));
+          strDeviceInfo = strDeviceInfo.Left((int)strDeviceInfo.length() - 1); // strip \n added by asctime
+          strDeviceInfo.append(" +0000");
+        }
+      }
+      strDeviceInfo.append("\n");
+    }
+    PrintToStdOut(strDeviceInfo.c_str());
   }
 }
 
@@ -222,6 +285,7 @@ void ShowHelpCommandLine(const char* strExec)
       "  -d --log-level {level}      Sets the log level. See cectypes.h for values." << endl <<
       "  -s --single-command         Execute a single command and exit. Does not power" << endl <<
       "                              on devices on startup and power them off on exit." << endl <<
+      "  -o --osd-name {osd name}    Use a custom osd name." << endl <<
       "  [COM PORT]                  The com port to connect to. If no COM" << endl <<
       "                              port is given, the client tries to connect to the" << endl <<
       "                              first device that is detected." << endl <<
@@ -305,7 +369,7 @@ bool ProcessCommandSP(ICECAdapter *parser, const string &command, string &argume
     if (GetWord(arguments, strAddress))
     {
       sscanf(strAddress.c_str(), "%x", &iAddress);
-      if (iAddress >= 0 && iAddress <= 0xFFFF)
+      if (iAddress >= 0 && iAddress <= CEC_INVALID_PHYSICAL_ADDRESS)
         parser->SetStreamPath((uint16_t)iAddress);
       return true;
     }
@@ -496,7 +560,7 @@ bool ProcessCommandAS(ICECAdapter *parser, const string &command, string & UNUSE
 {
   if (command == "as")
   {
-    parser->SetActiveView();
+    parser->SetActiveSource();
     return true;
   }
 
@@ -796,14 +860,15 @@ bool ProcessCommandSCAN(ICECAdapter *parser, const string &command, string & UNU
 {
   if (command == "scan")
   {
-    PrintToStdOut("CEC bus information");
-    PrintToStdOut("===================");
+    CStdString strLog;
+    PrintToStdOut("requesting CEC bus information ...");
+
+    strLog.append("CEC bus information\n===================\n");
     cec_logical_addresses addresses = parser->GetActiveDevices();
     for (uint8_t iPtr = 0; iPtr < 16; iPtr++)
     {
       if (addresses[iPtr])
       {
-        CStdString strLog;
         uint64_t iVendorId        = parser->GetDeviceVendorId((cec_logical_address)iPtr);
         bool     bActive          = parser->IsActiveSource((cec_logical_address)iPtr);
         uint16_t iPhysicalAddress = parser->GetDevicePhysicalAddress((cec_logical_address)iPtr);
@@ -825,10 +890,14 @@ bool ProcessCommandSCAN(ICECAdapter *parser, const string &command, string & UNU
         strLog.AppendFormat("power status:  %s\n", parser->ToString(power));
         if ((uint8_t)lang.device == iPtr)
           strLog.AppendFormat("language:      %s\n", lang.language);
-        strLog.append("\n");
-        PrintToStdOut(strLog);
+        strLog.append("\n\n");
       }
     }
+
+    cec_logical_address activeSource = parser->GetActiveSource();
+    strLog.AppendFormat("currently active source: %s (%d)", parser->ToString(activeSource), (int)activeSource);
+
+    PrintToStdOut(strLog);
     return true;
   }
 
@@ -1011,7 +1080,12 @@ bool ProcessCommandLineArguments(int argc, char *argv[])
       {
         if (argc >= iArgPtr + 2)
         {
-          g_config.iHDMIPort = (int8_t)atoi(argv[iArgPtr + 1]);
+          uint8_t hdmiport = (int8_t)atoi(argv[iArgPtr + 1]);
+          if (hdmiport < 1)
+              hdmiport = 1;
+          if (hdmiport > 15)
+              hdmiport = 15;
+          g_config.iHDMIPort = hdmiport;
           cout << "using HDMI port '" << (int)g_config.iHDMIPort << "'" << endl;
           ++iArgPtr;
         }
@@ -1024,6 +1098,17 @@ bool ProcessCommandLineArguments(int argc, char *argv[])
         g_config.bGetSettingsFromROM = 1;
         ++iArgPtr;
       }
+      else if (!strcmp(argv[iArgPtr], "-o") ||
+               !strcmp(argv[iArgPtr], "--osd-name"))
+      {
+        if (argc >= iArgPtr + 2)
+        {
+          snprintf(g_config.strDeviceName, 13, "%s", argv[iArgPtr + 1]);
+          cout << "using osd name " << g_config.strDeviceName << endl;
+          ++iArgPtr;
+        }
+        ++iArgPtr;
+      }
       else
       {
         g_strPort = argv[iArgPtr++];
@@ -1034,15 +1119,41 @@ bool ProcessCommandLineArguments(int argc, char *argv[])
   return bReturn;
 }
 
+// Open a connection to the mythfrontend control interface
+void connectMythFrontend() {
+  struct sockaddr_in serv_addr;
+  struct hostent *server;
+  g_mythfrontendSock = socket(AF_INET, SOCK_STREAM, 0);
+  server = gethostbyname("localhost");
+  bzero((char *) &serv_addr, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  bcopy((char *)server->h_addr, 
+         (char *)&serv_addr.sin_addr.s_addr,
+         server->h_length);
+  serv_addr.sin_port = htons(6546);
+  
+  if (connect(g_mythfrontendSock,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
+    PrintToStdOut("ERROR connecting");
+  
+  char buffer[256];  
+  bzero(buffer,256);
+  int n = read(g_mythfrontendSock,buffer,255);
+  if (n < 0) 
+    PrintToStdOut("ERROR reading from socket");
+  else
+    PrintToStdOut("Connected to Mythfrontend");
+}
+
 int main (int argc, char *argv[])
 {
   g_config.Clear();
   snprintf(g_config.strDeviceName, 13, "MythCEC");
-  g_config.callbackParam       = NULL;
-  g_config.clientVersion       = CEC_CLIENT_VERSION_1_5_0;
+  g_config.clientVersion       = CEC_CLIENT_VERSION_1_6_2;
+  g_config.bActivateSource     = 0;
   g_callbacks.CBCecLogMessage  = &CecLogMessage;
   g_callbacks.CBCecKeyPress    = &CecKeyPress;
   g_callbacks.CBCecCommand     = &CecCommand;
+  g_callbacks.CBCecAlert       = &CecAlert;
   g_config.callbacks           = &g_callbacks;
   g_config.bAutodetectAddress = 1;
 
@@ -1123,6 +1234,8 @@ int main (int argc, char *argv[])
   if (fd == -1) {
       cout << "Lirc initialisation failed" << endl;
   }
+  
+  connectMythFrontend();
 
   struct lirc_config *config;
   if(lirc_readconfig(NULL,&config,NULL)==0)
@@ -1169,15 +1282,11 @@ int main (int argc, char *argv[])
               } 
               // Amp controls
               else if (strcmp(c,"CEC_VOLUP")==0) {
-                  // Note: parser->VolumeUp() doesn't work well with my Sony AVAmp as only one press can be sent at once
-                  // whereas the device needs two volume up commands to change the volume (the first just shows the current volume)
-                  parser->SendKeypress(CEC::CECDEVICE_AUDIOSYSTEM, CEC::CEC_USER_CONTROL_CODE_VOLUME_UP, false);
-                  parser->SendKeyRelease(CEC::CECDEVICE_AUDIOSYSTEM, false);
+                  displayVolume(parser->VolumeUp());
               } else if (strcmp(c,"CEC_VOLDOWN")==0) {
-                  parser->SendKeypress(CEC::CECDEVICE_AUDIOSYSTEM, CEC::CEC_USER_CONTROL_CODE_VOLUME_DOWN, false);
-                  parser->SendKeyRelease(CEC::CECDEVICE_AUDIOSYSTEM, false);
+		  displayVolume(parser->VolumeDown());
               } else if (strcmp(c,"CEC_MUTE")==0) {
-                  parser->MuteAudio();
+                  displayVolume(parser->MuteAudio());
               }
               // Playstation controls
               else if (strcmp(c,"CEC_UP")==0) {
@@ -1220,6 +1329,8 @@ int main (int argc, char *argv[])
       }
       lirc_freeconfig(config);
   }
+  
+  close(g_mythfrontendSock);
   
   lirc_deinit();
 

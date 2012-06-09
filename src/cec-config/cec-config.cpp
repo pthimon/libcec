@@ -144,7 +144,6 @@ void EnableCallbacks(ICECAdapter *adapter)
   g_callbacks.CBCecLogMessage = &CecLogMessage;
   g_callbacks.CBCecKeyPress   = &CecKeyPress;
   g_callbacks.CBCecCommand    = &CecCommand;
-  g_callbacks.CBCecConfigurationChanged = NULL;
   adapter->EnableCallbacks(NULL, &g_callbacks);
 }
 
@@ -228,18 +227,20 @@ bool OpenConnection(cec_device_type type = CEC_DEVICE_TYPE_RECORDING_DEVICE)
 
 int8_t FindPhysicalAddressPortNumber(void)
 {
-  PrintToStdOut("Enter the HDMI port number to which you connected your CEC adapter, followed by <enter>. Only port 1, 2, 3 or 4 are supported. Anything else will cancel this wizard.");
+  PrintToStdOut("Enter the HDMI port number to which you connected your CEC adapter, followed by <enter>. Valid ports are in the range 1-15. Anything else will cancel this wizard.");
   string input;
   getline(cin, input);
   cin.clear();
-  if (input.empty() || (input != "1" && input != "2" && input != "3" && input != "4"))
+  if (input.empty())
     return -1;
-  return (int8_t)atoi(input.c_str());
+
+  int hdmiport = atoi(input.c_str());
+  return (hdmiport < 1 || hdmiport > 15) ? -1 : (int8_t)hdmiport;
 }
 
 cec_logical_address FindPhysicalAddressBaseDevice(void)
 {
-  PrintToStdOut("Press 1 of your CEC adapter is connected to your TV or\npress 2 if it's connected to an AVR, followed by <enter>. Anything else will cancel this wizard.");
+  PrintToStdOut("Press 1 if your CEC adapter is connected to your TV or\npress 2 if it's connected to an AVR, followed by <enter>. Anything else will cancel this wizard.");
 
   string input;
   getline(cin, input);
@@ -257,7 +258,7 @@ cec_logical_address FindPhysicalAddressBaseDevice(void)
 uint16_t FindPhysicalAddress(void)
 {
   PrintToStdOut("=== Physical Address Configuration ===\n");
-  uint16_t iAddress(0xFFFF);
+  uint16_t iAddress(CEC_INVALID_PHYSICAL_ADDRESS);
 
   PrintToStdOut("Do you want to let libCEC try to autodetect the address (y/n)?");
   string input;
@@ -279,22 +280,22 @@ uint16_t FindPhysicalAddress(void)
     else
     {
       iAddress = g_parser->GetDevicePhysicalAddress(g_primaryAddress);
-      if (iAddress == 0 || iAddress == 0xFFFF)
+      if (iAddress == 0 || iAddress == CEC_INVALID_PHYSICAL_ADDRESS)
         PrintToStdOut("Failed. Please enter the address manually, or restart this wizard and use different settings.");
     }
   }
 
-  if (iAddress == 0 || iAddress == 0xFFFF)
+  if (iAddress == 0 || iAddress == CEC_INVALID_PHYSICAL_ADDRESS)
   {
-    PrintToStdOut("Please enter the physical address (0000 - FFFF), followed by <enter>.");
+    PrintToStdOut("Please enter the physical address (0001 - FFFE), followed by <enter>.");
     getline(cin, input);
     cin.clear();
 
     int iAddressTmp;
     if (sscanf(input.c_str(), "%x", &iAddressTmp) == 1)
     {
-      if (iAddressTmp < 0 || iAddressTmp > 0xFFFF)
-        iAddressTmp = 0xFFFF;
+      if (iAddressTmp <= CEC_PHYSICAL_ADDRESS_TV || iAddressTmp > CEC_MAX_PHYSICAL_ADDRESS)
+        iAddressTmp = CEC_INVALID_PHYSICAL_ADDRESS;
       iAddress = (uint16_t)iAddressTmp;
     }
   }

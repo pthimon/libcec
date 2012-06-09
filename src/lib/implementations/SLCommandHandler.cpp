@@ -127,7 +127,7 @@ bool CSLCommandHandler::HandleActiveSource(const cec_command &command)
   {
     uint16_t iAddress = ((uint16_t)command.parameters[0] << 8) | ((uint16_t)command.parameters[1]);
     CCECBusDevice *primary = m_processor->GetPrimaryDevice();
-    bool bSendPowerOffState(iAddress != primary->GetPhysicalAddress(false) && primary->IsActiveSource());
+    bool bSendPowerOffState(iAddress != primary->GetPhysicalAddress() && primary->IsActiveSource());
 
     m_processor->SetActiveSource(iAddress);
     if (bSendPowerOffState)
@@ -155,18 +155,6 @@ bool CSLCommandHandler::HandleDeviceVendorId(const cec_command &command)
     return Transmit(response);
   }
   return true;
-}
-
-bool CSLCommandHandler::HandleGivePhysicalAddress(const cec_command &command)
-{
-  if (m_processor->IsRunning() && m_busDevice->MyLogicalAddressContains(command.destination))
-  {
-    CCECBusDevice *device = GetDevice(command.destination);
-    if (device)
-      return device->TransmitPhysicalAddress(); // only the physical address, don't send image view on
-  }
-
-  return false;
 }
 
 bool CSLCommandHandler::HandleVendorCommand(const cec_command &command)
@@ -215,7 +203,7 @@ void CSLCommandHandler::TransmitVendorCommand0205(const cec_logical_address iSou
   response.PushBack(SL_COMMAND_UNKNOWN_02);
   response.PushBack(SL_COMMAND_TYPE_HDDRECORDER);
 
-  Transmit(response, false);
+  Transmit(response);
 }
 
 void CSLCommandHandler::HandleVendorCommandPowerOn(const cec_command &command)
@@ -266,7 +254,7 @@ void CSLCommandHandler::TransmitVendorCommandSetDeviceMode(const cec_logical_add
   cec_command::Format(response, iSource, iDestination, CEC_OPCODE_VENDOR_COMMAND);
   response.PushBack(SL_COMMAND_SET_DEVICE_MODE);
   response.PushBack((uint8_t)type);
-  Transmit(response, false);
+  Transmit(response);
 }
 
 bool CSLCommandHandler::HandleGiveDeckStatus(const cec_command &command)
@@ -411,6 +399,10 @@ bool CSLCommandHandler::PowerOn(const cec_logical_address iInitiator, const cec_
   {
     /* LG devices only allow themselves to be woken up by the TV with a vendor command */
     cec_command command;
+
+    if (!m_bSLEnabled)
+      TransmitVendorID(CECDEVICE_TV, CEC_VENDOR_LG);
+
     cec_command::Format(command, CECDEVICE_TV, iDestination, CEC_OPCODE_VENDOR_COMMAND);
     command.PushBack(SL_COMMAND_POWER_ON);
     command.PushBack(0);
