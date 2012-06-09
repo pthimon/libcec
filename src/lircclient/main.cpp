@@ -1044,6 +1044,7 @@ int main (int argc, char *argv[])
   g_callbacks.CBCecKeyPress    = &CecKeyPress;
   g_callbacks.CBCecCommand     = &CecCommand;
   g_config.callbacks           = &g_callbacks;
+  g_config.bAutodetectAddress = 1;
 
   if (!ProcessCommandLineArguments(argc, argv))
     return 0;
@@ -1141,6 +1142,7 @@ int main (int argc, char *argv[])
           {
               // Device select
               if (strcmp(c,"CEC_SELECT")==0) {
+
                   if (parser->GetActiveSource() == CEC::CECDEVICE_RECORDINGDEVICE1) {
                       // switch to playstation
                       parser->SetStreamPath(CEC::CECDEVICE_PLAYBACKDEVICE1);
@@ -1148,7 +1150,8 @@ int main (int argc, char *argv[])
                       lirc_setmode(config, "ps3");
                   } else {
                       // switch to mythtv
-                      parser->SetStreamPath(CEC::CEC_DEVICE_TYPE_RECORDING_DEVICE);
+                	  parser->SetStreamPath(CEC::CECDEVICE_RECORDINGDEVICE1);
+                	  parser->SetActiveSource(CEC::CEC_DEVICE_TYPE_RECORDING_DEVICE);
 
                       lirc_setmode(config, "myth");
                   }
