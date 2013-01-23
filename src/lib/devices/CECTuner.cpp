@@ -30,12 +30,20 @@
  *     http://www.pulse-eight.net/
  */
 
+#include "env.h"
 #include "CECTuner.h"
 
 using namespace CEC;
+using namespace PLATFORM;
 
 CCECTuner::CCECTuner(CCECProcessor *processor, cec_logical_address address, uint16_t iPhysicalAddress /* = CEC_INVALID_PHYSICAL_ADDRESS */) :
     CCECBusDevice(processor, address, iPhysicalAddress)
 {
-  m_type          = CEC_DEVICE_TYPE_TUNER;
+  m_type = CEC_DEVICE_TYPE_TUNER;
+}
+
+void CCECTuner::ResetDeviceStatus(void)
+{
+  CLockObject lock(m_mutex);
+  CCECBusDevice::ResetDeviceStatus();
 }

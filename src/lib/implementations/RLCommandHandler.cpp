@@ -30,26 +30,25 @@
  *     http://www.pulse-eight.net/
  */
 
+#include "env.h"
 #include "RLCommandHandler.h"
-#include "../devices/CECBusDevice.h"
-#include "../CECProcessor.h"
-#include "../LibCEC.h"
+
+#include "lib/platform/util/timeutils.h"
+#include "lib/devices/CECBusDevice.h"
+#include "lib/CECProcessor.h"
+#include "lib/LibCEC.h"
 
 using namespace CEC;
 using namespace PLATFORM;
 
-CRLCommandHandler::CRLCommandHandler(CCECBusDevice *busDevice) :
-    CCECCommandHandler(busDevice)
+CRLCommandHandler::CRLCommandHandler(CCECBusDevice *busDevice,
+                                     int32_t iTransmitTimeout /* = CEC_DEFAULT_TRANSMIT_TIMEOUT */,
+                                     int32_t iTransmitWait /* = CEC_DEFAULT_TRANSMIT_WAIT */,
+                                     int8_t iTransmitRetries /* = CEC_DEFAULT_TRANSMIT_RETRIES */,
+                                     int64_t iActiveSourcePending /* = 0 */) :
+    CCECCommandHandler(busDevice, iTransmitTimeout, iTransmitWait, iTransmitRetries, iActiveSourcePending)
 {
   m_vendorId = CEC_VENDOR_TOSHIBA;
-  CCECBusDevice *primary = m_processor->GetPrimaryDevice();
-
-  /* imitate Toshiba devices */
-  if (primary && m_busDevice->GetLogicalAddress() != primary->GetLogicalAddress())
-  {
-    primary->SetVendorId(CEC_VENDOR_TOSHIBA);
-    primary->ReplaceHandler(false);
-  }
 }
 
 bool CRLCommandHandler::InitHandler(void)
@@ -58,12 +57,24 @@ bool CRLCommandHandler::InitHandler(void)
     return true;
   m_bHandlerInited = true;
 
-  if (m_busDevice->GetLogicalAddress() == CECDEVICE_TV)
-  {
-    CCECBusDevice *primary = m_processor->GetPrimaryDevice();
+  if (m_busDevice->GetLogicalAddress() != CECDEVICE_TV)
+    return true;
 
-    /* send the vendor id */
-    primary->TransmitVendorID(CECDEVICE_BROADCAST);
+  CCECBusDevice *primary = m_processor->GetPrimaryDevice();
+  if (primary && primary->GetLogicalAddress() != CECDEVICE_UNREGISTERED)
+  {
+    /* imitate Toshiba devices */
+    if (m_busDevice->GetLogicalAddress() != primary->GetLogicalAddress())
+    {
+      primary->SetVendorId(CEC_VENDOR_TOSHIBA);
+      primary->ReplaceHandler(false);
+    }
+
+    if (m_busDevice->GetLogicalAddress() == CECDEVICE_TV)
+    {
+      /* send the vendor id */
+      primary->TransmitVendorID(CECDEVICE_BROADCAST, false, false);
+    }
   }
 
   return true;

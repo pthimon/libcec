@@ -61,66 +61,269 @@ extern "C" {
 namespace CEC {
 #endif
 
-//default physical address 1.0.0.0, HDMI port 1
+/*!
+ * default physical address 1.0.0.0, HDMI port 1
+ */
 #define CEC_DEFAULT_PHYSICAL_ADDRESS 0x1000
+/*!
+ * default HDMI port to which the adapter is connected, port 1
+ */
 #define CEC_DEFAULT_HDMI_PORT        1
+/*!
+ * default logical address of the device to which the adapter is connected, TV
+ */
 #define CEC_DEFAULT_BASE_DEVICE      0
+
+/*!
+ * timeout in milliseconds to send a key release event after receiving a key press
+ */
+#define CEC_BUTTON_TIMEOUT           500
+
+/*!
+ * don't send the same key twice within this timeout in milliseconds
+ */
+#define CEC_DOUBLE_TAP_TIMEOUT_MS    250
+
+/*!
+ * don't query the power state for the same device within this timeout in milliseconds
+ */
+#define CEC_POWER_STATE_REFRESH_TIME 30000
+
+/*!
+ * unknown firmware version value
+ */
+#define CEC_FW_VERSION_UNKNOWN       0xFFFF
+
+/*!
+ * unknown build date value
+ */
+#define CEC_FW_BUILD_UNKNOWN         0
+
+/*!
+ * maximum number of retries when opening a connection
+ */
+#define CEC_CONNECT_TRIES            3
+
+/*!
+ * physical address of the TV
+ */
+#define CEC_PHYSICAL_ADDRESS_TV      0
+
+/*!
+ * minimum physical address for the adapter
+ */
+#define CEC_MIN_PHYSICAL_ADDRESS     0x1000
+
+/*!
+ * maximum physical address for the adapter
+ */
+#define CEC_MAX_PHYSICAL_ADDRESS     0xFFFE
+
+/*!
+ * invalid physical address value
+ */
+#define CEC_INVALID_PHYSICAL_ADDRESS 0xFFFF
+
+/*!
+ * minimum vendor ID value
+ */
+#define CEC_MIN_VENDORID             1
+
+/*!
+ * maximum vendor ID value
+ */
+#define CEC_MAX_VENDORID             0xFFFFFE
+
+/*!
+ * invalid vendor ID value
+ */
+#define CEC_INVALID_VENDORID         0xFFFFFF
+
+/*!
+ * minimum HDMI port number value
+ */
+#define CEC_MIN_HDMI_PORTNUMBER      1
+
+/*!
+ * maximum HDMI port number value
+ */
+#define CEC_MAX_HDMI_PORTNUMBER      15
+
+/*!
+ * invalid HDMI port number value
+ */
+#define CEC_HDMI_PORTNUMBER_NONE     0
+
+/*!
+ * default value for settings "use tv menu language"
+ */
+#define CEC_DEFAULT_SETTING_USE_TV_MENU_LANGUAGE      1
+
+/*!
+ * default value for settings "activate source"
+ */
+#define CEC_DEFAULT_SETTING_ACTIVATE_SOURCE           1
+
+/*!
+ * default value for settings "power off on shutdown"
+ */
+#define CEC_DEFAULT_SETTING_POWER_OFF_SHUTDOWN        1
+
+/*!
+ * default value for settings "power off when activating the screensaver"
+ */
+#define CEC_DEFAULT_SETTING_POWER_OFF_SCREENSAVER     1
+
+/*!
+ * default value for settings "power off on standby"
+ */
+#define CEC_DEFAULT_SETTING_POWER_OFF_ON_STANDBY      1
+
+/*!
+ * default value for settings "shutdown on standby"
+ */
+#define CEC_DEFAULT_SETTING_SHUTDOWN_ON_STANDBY       0
+
+/*!
+ * default value for settings "send inactive source when stopping"
+ */
+#define CEC_DEFAULT_SETTING_SEND_INACTIVE_SOURCE      1
+
+/*!
+ * default value for settings "power off devices when going to standby"
+ */
+#define CEC_DEFAULT_SETTING_POWER_OFF_DEVICES_STANDBY 1
+
+/*!
+ * default value for settings "device menu language"
+ */
+#define CEC_DEFAULT_DEVICE_LANGUAGE                   "eng"
+
+/*!
+ * default value for settings "autodetect physical address"
+ */
+#define CEC_DEFAULT_SETTING_AUTODETECT_ADDRESS        0
+
+/*!
+ * default value for settings "get settings from ROM"
+ */
+#define CEC_DEFAULT_SETTING_GET_SETTINGS_FROM_ROM     0
+
+/*!
+ * default value for settings "libCEC CEC version"
+ */
+#define CEC_DEFAULT_SETTING_CEC_VERSION               0x05
+
+/*!
+ * wait this amount of milliseconds before retrying to send a failed message
+ */
+#define CEC_DEFAULT_TRANSMIT_RETRY_WAIT 500
+
+/*!
+ * transmission fails when not acked within this amount of milliseconds after sending the initial packet
+ */
+#define CEC_DEFAULT_TRANSMIT_TIMEOUT    1000
+
+/*!
+ * wait this amount of milliseconds for an ack
+ */
+#define CEC_DEFAULT_TRANSMIT_WAIT       1000
+
+/*!
+ * default number of retries
+ */
+#define CEC_DEFAULT_TRANSMIT_RETRIES    1
+
+/*!
+ * default connection timeout in milliseconds
+ */
+#define CEC_DEFAULT_CONNECT_TIMEOUT     10000
+
+/*!
+ * wait this amount of milliseconds before retrying when failing to connect
+ */
+#define CEC_DEFAULT_CONNECT_RETRY_WAIT  1000
+
+/*!
+ * default serial baudrate
+ */
+#define CEC_SERIAL_DEFAULT_BAUDRATE     38400
+
+/*!
+ * maximum time to wait when clearing input
+ */
+#define CEC_CLEAR_INPUT_DEFAULT_WAIT    1000
+
+/*!
+ * wait this amount of milliseconds before retrying when libCEC failed to make itself the active source
+ */
+#define CEC_ACTIVE_SOURCE_SWITCH_RETRY_TIME_MS 1000
+
+/*!
+ * don't forward any power off command to the client application for this amount of milliseconds after sending a power off command
+ */
+#define CEC_FORWARD_STANDBY_MIN_INTERVAL 10000
+
+/*!
+ * default timeout in milliseconds for combo keys
+ */
+#define CEC_DEFAULT_COMBO_TIMEOUT_MS 1000
+
+/*!
+ * the virtual device path to use for the Raspberry Pi's CEC wire
+ */
+#define CEC_RPI_VIRTUAL_PATH           "Raspberry Pi"
+
+/*!
+ * the name of the virtual COM port to use for the Raspberry Pi's CEC wire
+ */
+#define CEC_RPI_VIRTUAL_COM            "RPI"
+
+/*!
+ * the path to use for the TDA995x's CEC wire
+ */
+#define CEC_TDA995x_PATH		"/dev/hdmicec"
+
+/*!
+ * the name of the virtual COM port to use for the TDA995x's CEC wire
+ */
+#define CEC_TDA995x_VIRTUAL_COM		"CuBox"
+
+/*!
+ * Mimimum client version
+ */
+#define CEC_MIN_LIB_VERSION          2
+
+/*!
+ * libCEC's major version number
+ */
+#define CEC_LIB_VERSION_MAJOR        2
+
+/*!
+ * libCEC's major version number as string
+ */
+#define CEC_LIB_VERSION_MAJOR_STR    "2"
+
+/*!
+ * libCEC's minor version number
+ */
+#define CEC_LIB_VERSION_MINOR        0
+
 #define MSGSTART                     0xFF
 #define MSGEND                       0xFE
 #define MSGESC                       0xFD
 #define ESCOFFSET                    3
-#define CEC_BUTTON_TIMEOUT           500
-#define CEC_POWER_STATE_REFRESH_TIME 30000
-#define CEC_FW_VERSION_UNKNOWN       0xFFFF
-#define CEC_FW_BUILD_UNKNOWN         0
-#define CEC_CONNECT_TRIES            3
 
-#define CEC_PHYSICAL_ADDRESS_TV      0
-#define CEC_MIN_PHYSICAL_ADDRESS     0x1000
-#define CEC_MAX_PHYSICAL_ADDRESS     0xFFFE
-#define CEC_INVALID_PHYSICAL_ADDRESS 0xFFFF
-
-#define CEC_MIN_VENDORID             1
-#define CEC_MAX_VENDORID             0xFFFFFE
-#define CEC_INVALID_VENDORID         0xFFFFFF
-
-#define CEC_MIN_HDMI_PORTNUMBER      1
-#define CEC_MAX_HDMI_PORTNUMBER      15
-#define CEC_HDMI_PORTNUMBER_NONE     0
-
-#define CEC_DEFAULT_SETTING_USE_TV_MENU_LANGUAGE      1
-#define CEC_DEFAULT_SETTING_ACTIVATE_SOURCE           1
-#define CEC_DEFAULT_SETTING_POWER_OFF_SHUTDOWN        1
-#define CEC_DEFAULT_SETTING_POWER_OFF_SCREENSAVER     1
-#define CEC_DEFAULT_SETTING_POWER_OFF_ON_STANDBY      1
-#define CEC_DEFAULT_SETTING_SHUTDOWN_ON_STANDBY       0
-#define CEC_DEFAULT_SETTING_SEND_INACTIVE_SOURCE      1
-#define CEC_DEFAULT_SETTING_POWER_OFF_DEVICES_STANDBY 1
-#define CEC_DEFAULT_DEVICE_LANGUAGE                   "eng"
-#define CEC_DEFAULT_SETTING_AUTODETECT_ADDRESS        1
-#define CEC_DEFAULT_SETTING_GET_SETTINGS_FROM_ROM     0
-
-#define CEC_DEFAULT_TRANSMIT_RETRY_WAIT 500
-#define CEC_DEFAULT_TRANSMIT_TIMEOUT    1000
-#define CEC_DEFAULT_TRANSMIT_WAIT       1000
-#define CEC_DEFAULT_TRANSMIT_RETRIES    1
-
-#define CEC_DEFAULT_CONNECT_TIMEOUT     10000
-#define CEC_DEFAULT_CONNECT_RETRY_WAIT  1000
-#define CEC_SERIAL_DEFAULT_BAUDRATE     38400
-#define CEC_CLEAR_INPUT_DEFAULT_WAIT    1000
-
-#define CEC_MIN_LIB_VERSION          1
-#define CEC_LIB_VERSION_MAJOR        1
-#define CEC_LIB_VERSION_MINOR        6
+// defines to make compile time checks for certain features easy
+#define CEC_FEATURE_CONFIGURABLE_COMBO_KEY 1
 
 typedef enum cec_abort_reason
 {
-  CEC_ABORT_REASON_UNRECOGNIZED_OPCODE            = 0,
-  CEC_ABORT_REASON_NOT_IN_CORRECT_MODE_TO_RESPOND = 1,
-  CEC_ABORT_REASON_CANNOT_PROVIDE_SOURCE          = 2,
-  CEC_ABORT_REASON_INVALID_OPERAND                = 3,
-  CEC_ABORT_REASON_REFUSED                        = 4
+  CEC_ABORT_REASON_UNRECOGNIZED_OPCODE            = 0,//!< CEC_ABORT_REASON_UNRECOGNIZED_OPCODE
+  CEC_ABORT_REASON_NOT_IN_CORRECT_MODE_TO_RESPOND = 1,//!< CEC_ABORT_REASON_NOT_IN_CORRECT_MODE_TO_RESPOND
+  CEC_ABORT_REASON_CANNOT_PROVIDE_SOURCE          = 2,//!< CEC_ABORT_REASON_CANNOT_PROVIDE_SOURCE
+  CEC_ABORT_REASON_INVALID_OPERAND                = 3,//!< CEC_ABORT_REASON_INVALID_OPERAND
+  CEC_ABORT_REASON_REFUSED                        = 4 //!< CEC_ABORT_REASON_REFUSED
 } cec_abort_reason;
 
 typedef enum cec_analogue_broadcast_type
@@ -495,7 +698,7 @@ typedef enum cec_user_control_code
   CEC_USER_CONTROL_CODE_AN_RETURN                   = 0x91,
   CEC_USER_CONTROL_CODE_AN_CHANNELS_LIST            = 0x96,
   CEC_USER_CONTROL_CODE_MAX                         = 0x96,
-  CEC_USER_CONTROL_CODE_UNKNOWN
+  CEC_USER_CONTROL_CODE_UNKNOWN                     = 0xFF
 } cec_user_control_code;
 
 typedef enum cec_logical_address
@@ -584,6 +787,15 @@ typedef enum cec_opcode
   CEC_OPCODE_SYSTEM_AUDIO_MODE_REQUEST     = 0x70,
   CEC_OPCODE_SYSTEM_AUDIO_MODE_STATUS      = 0x7E,
   CEC_OPCODE_SET_AUDIO_RATE                = 0x9A,
+
+  /* CEC 1.4 */
+  CEC_OPCODE_START_ARC                     = 0xC0,
+  CEC_OPCODE_REPORT_ARC_STARTED            = 0xC1,
+  CEC_OPCODE_REPORT_ARC_ENDED              = 0xC2,
+  CEC_OPCODE_REQUEST_ARC_START             = 0xC3,
+  CEC_OPCODE_REQUEST_ARC_END               = 0xC4,
+  CEC_OPCODE_END_ARC                       = 0xC5,
+  CEC_OPCODE_CDC                           = 0xF8,
   /* when this opcode is set, no opcode will be sent to the device. this is one of the reserved numbers */
   CEC_OPCODE_NONE                          = 0xFD
 } cec_opcode;
@@ -598,52 +810,6 @@ typedef enum cec_log_level
   CEC_LOG_ALL     = 31
 } cec_log_level;
 
-typedef enum cec_adapter_messagecode
-{
-  MSGCODE_NOTHING = 0,
-  MSGCODE_PING,
-  MSGCODE_TIMEOUT_ERROR,
-  MSGCODE_HIGH_ERROR,
-  MSGCODE_LOW_ERROR,
-  MSGCODE_FRAME_START,
-  MSGCODE_FRAME_DATA,
-  MSGCODE_RECEIVE_FAILED,
-  MSGCODE_COMMAND_ACCEPTED,
-  MSGCODE_COMMAND_REJECTED,
-  MSGCODE_SET_ACK_MASK,
-  MSGCODE_TRANSMIT,
-  MSGCODE_TRANSMIT_EOM,
-  MSGCODE_TRANSMIT_IDLETIME,
-  MSGCODE_TRANSMIT_ACK_POLARITY,
-  MSGCODE_TRANSMIT_LINE_TIMEOUT,
-  MSGCODE_TRANSMIT_SUCCEEDED,
-  MSGCODE_TRANSMIT_FAILED_LINE,
-  MSGCODE_TRANSMIT_FAILED_ACK,
-  MSGCODE_TRANSMIT_FAILED_TIMEOUT_DATA,
-  MSGCODE_TRANSMIT_FAILED_TIMEOUT_LINE,
-  MSGCODE_FIRMWARE_VERSION,
-  MSGCODE_START_BOOTLOADER,
-  MSGCODE_GET_BUILDDATE,
-  MSGCODE_SET_CONTROLLED,
-  MSGCODE_GET_AUTO_ENABLED,
-  MSGCODE_SET_AUTO_ENABLED,
-  MSGCODE_GET_DEFAULT_LOGICAL_ADDRESS,
-  MSGCODE_SET_DEFAULT_LOGICAL_ADDRESS,
-  MSGCODE_GET_LOGICAL_ADDRESS_MASK,
-  MSGCODE_SET_LOGICAL_ADDRESS_MASK,
-  MSGCODE_GET_PHYSICAL_ADDRESS,
-  MSGCODE_SET_PHYSICAL_ADDRESS,
-  MSGCODE_GET_DEVICE_TYPE,
-  MSGCODE_SET_DEVICE_TYPE,
-  MSGCODE_GET_HDMI_VERSION,
-  MSGCODE_SET_HDMI_VERSION,
-  MSGCODE_GET_OSD_NAME,
-  MSGCODE_SET_OSD_NAME,
-  MSGCODE_WRITE_EEPROM,
-  MSGCODE_FRAME_EOM = 0x80,
-  MSGCODE_FRAME_ACK = 0x40,
-} cec_adapter_messagecode;
-
 typedef enum cec_bus_device_status
 {
   CEC_DEVICE_STATUS_UNKNOWN,
@@ -654,17 +820,37 @@ typedef enum cec_bus_device_status
 
 typedef enum cec_vendor_id
 {
-  CEC_VENDOR_SAMSUNG   = 0x0000F0,
-  CEC_VENDOR_LG        = 0x00E091,
-  CEC_VENDOR_PANASONIC = 0x008045,
-  CEC_VENDOR_PIONEER   = 0x00E036,
-  CEC_VENDOR_ONKYO     = 0x0009B0,
-  CEC_VENDOR_YAMAHA    = 0x00A0DE,
-  CEC_VENDOR_PHILIPS   = 0x00903E,
-  CEC_VENDOR_SONY      = 0x080046,
   CEC_VENDOR_TOSHIBA   = 0x000039,
+  CEC_VENDOR_SAMSUNG   = 0x0000F0,
+  CEC_VENDOR_DENON     = 0x0005CD,
+  CEC_VENDOR_LOEWE     = 0x000982,
+  CEC_VENDOR_ONKYO     = 0x0009B0,
+  CEC_VENDOR_MEDION    = 0x000CB8,
+  CEC_VENDOR_AKAI      = 0x0020C7,
+  CEC_VENDOR_AOC       = 0x002467,
+  CEC_VENDOR_PANASONIC = 0x008045,
+  CEC_VENDOR_PHILIPS   = 0x00903E,
+  CEC_VENDOR_DAEWOO    = 0x009053,
+  CEC_VENDOR_YAMAHA    = 0x00A0DE,
+  CEC_VENDOR_GRUNDIG   = 0x00D0D5,
+  CEC_VENDOR_PIONEER   = 0x00E036,
+  CEC_VENDOR_LG        = 0x00E091,
+  CEC_VENDOR_SHARP     = 0x08001F,
+  CEC_VENDOR_SONY      = 0x080046,
+  CEC_VENDOR_BROADCOM  = 0x18C086,
+  CEC_VENDOR_VIZIO     = 0x6B746D,
+  CEC_VENDOR_BENQ      = 0x8065E9,
   CEC_VENDOR_UNKNOWN   = 0
 } cec_vendor_id;
+
+typedef enum cec_adapter_type
+{
+  ADAPTERTYPE_UNKNOWN          = 0,
+  ADAPTERTYPE_P8_EXTERNAL      = 0x1,
+  ADAPTERTYPE_P8_DAUGHTERBOARD = 0x2,
+  ADAPTERTYPE_RPI              = 0x100,
+  ADAPTERTYPE_TDA995x          = 0x200
+} cec_adapter_type;
 
 typedef struct cec_menu_language
 {
@@ -891,6 +1077,12 @@ typedef struct cec_command
 
     return CEC_OPCODE_NONE;
   }
+
+  void PushArray(size_t len, uint8_t *data)
+  {
+    for (size_t iPtr = 0; iPtr < len; iPtr++)
+      PushBack(data[iPtr]);
+  }
 #endif
 } cec_command;
 
@@ -899,18 +1091,6 @@ typedef struct cec_device_type_list
   cec_device_type types[5]; /**< the list of device types */
 
 #ifdef __cplusplus
-  /*!
-   * @deprecated Use Clear() instead.
-   * @brief Clear this list.
-   */
-  void clear(void) { Clear(); }
-  /*!
-   * @deprecated Use Add() instead.
-   * @brief Add a type to this list.
-   * @param type The type to add.
-   */
-  void add(const cec_device_type type) { Add(type); }
-
   /*!
    * @brief Clear this list.
    */
@@ -999,7 +1179,7 @@ typedef struct cec_logical_addresses
    */
   void Clear(void)
   {
-    primary = CECDEVICE_UNKNOWN;
+    primary = CECDEVICE_UNREGISTERED;
     for (unsigned int iPtr = 0; iPtr < 16; iPtr++)
       addresses[iPtr] = 0;
   }
@@ -1009,7 +1189,7 @@ typedef struct cec_logical_addresses
    */
   bool IsEmpty(void) const
   {
-    return primary == CECDEVICE_UNKNOWN;
+    return primary == CECDEVICE_UNREGISTERED;
   }
 
   /*!
@@ -1031,7 +1211,7 @@ typedef struct cec_logical_addresses
    */
   void Set(cec_logical_address address)
   {
-    if (primary == CECDEVICE_UNKNOWN)
+    if (primary == CECDEVICE_UNREGISTERED)
       primary = address;
 
     addresses[(int) address] = 1;
@@ -1041,10 +1221,10 @@ typedef struct cec_logical_addresses
    * @brief Mark a logical address as 'unset'
    * @param address The logical address to remove from this list.
    */
-  void Unset(cec_logical_address address)
+  void Unset(const cec_logical_address address)
   {
     if (primary == address)
-      primary = CECDEVICE_UNKNOWN;
+      primary = CECDEVICE_UNREGISTERED;
 
     addresses[(int) address] = 0;
   }
@@ -1081,28 +1261,33 @@ typedef struct cec_logical_addresses
 typedef enum libcec_alert
 {
   CEC_ALERT_SERVICE_DEVICE,
-  CEC_ALERT_CONNECTION_LOST
+  CEC_ALERT_CONNECTION_LOST,
+  CEC_ALERT_PERMISSION_ERROR,
+  CEC_ALERT_PORT_BUSY,
+  CEC_ALERT_PHYSICAL_ADDRESS_ERROR
 } libcec_alert;
 
 typedef enum libcec_parameter_type
 {
-  CEC_PARAMETER_TYPE_STRING
+  CEC_PARAMETER_TYPE_STRING,
+  CEC_PARAMETER_TYPE_UNKOWN
 } libcec_parameter_type;
 
-struct libcec_parameter
+typedef struct libcec_parameter
 {
   libcec_parameter_type paramType; /**< the type of this parameter */
   void*                 paramData; /**< the value of this parameter */
-};
+} libcec_parameter;
 
-struct libcec_configuration;
+typedef struct libcec_configuration libcec_configuration;
 
-typedef int (CEC_CDECL* CBCecLogMessageType)(void *param, const cec_log_message &);
-typedef int (CEC_CDECL* CBCecKeyPressType)(void *param, const cec_keypress &);
-typedef int (CEC_CDECL* CBCecCommandType)(void *param, const cec_command &);
-typedef int (CEC_CDECL* CBCecConfigurationChangedType)(void *param, const libcec_configuration &);
-typedef int (CEC_CDECL* CBCecAlertType)(void *param, const libcec_alert, const libcec_parameter &);
-typedef int (CEC_CDECL* CBCecMenuStateChangedType)(void *param, const cec_menu_state);
+typedef int (CEC_CDECL* CBCecLogMessageType)(void*, const cec_log_message);
+typedef int (CEC_CDECL* CBCecKeyPressType)(void*, const cec_keypress);
+typedef int (CEC_CDECL* CBCecCommandType)(void*, const cec_command);
+typedef int (CEC_CDECL* CBCecConfigurationChangedType)(void*, const libcec_configuration);
+typedef int (CEC_CDECL* CBCecAlertType)(void*, const libcec_alert, const libcec_parameter);
+typedef int (CEC_CDECL* CBCecMenuStateChangedType)(void*, const cec_menu_state);
+typedef void (CEC_CDECL* CBCecSourceActivatedType)(void*, const cec_logical_address, const uint8_t);
 
 typedef struct ICECCallbacks
 {
@@ -1153,6 +1338,13 @@ typedef struct ICECCallbacks
    */
   CBCecMenuStateChangedType CBCecMenuStateChanged;
 
+  /*!
+   * @brief Called when a source that's handled by this client is activated.
+   * @param logicalAddress The address that was just activated.
+   * @param bActivated 1 when activated, 0 when deactivated.
+   */
+  CBCecSourceActivatedType CBCecSourceActivated;
+
 #ifdef __cplusplus
    ICECCallbacks(void) { Clear(); }
   ~ICECCallbacks(void) { Clear(); };
@@ -1165,6 +1357,7 @@ typedef struct ICECCallbacks
     CBCecConfigurationChanged = NULL;
     CBCecAlert                = NULL;
     CBCecMenuStateChanged     = NULL;
+    CBCecSourceActivated      = NULL;
   }
 #endif
 } ICECCallbacks;
@@ -1178,7 +1371,23 @@ typedef enum cec_client_version
   CEC_CLIENT_VERSION_1_5_3   = 0x1503,
   CEC_CLIENT_VERSION_1_6_0   = 0x1600,
   CEC_CLIENT_VERSION_1_6_1   = 0x1601,
-  CEC_CLIENT_VERSION_1_6_2   = 0x1602
+  CEC_CLIENT_VERSION_1_6_2   = 0x1602,
+  CEC_CLIENT_VERSION_1_6_3   = 0x1603,
+  CEC_CLIENT_VERSION_1_7_0   = 0x1700,
+  CEC_CLIENT_VERSION_1_7_1   = 0x1701,
+  CEC_CLIENT_VERSION_1_7_2   = 0x1702,
+  CEC_CLIENT_VERSION_1_8_0   = 0x1800,
+  CEC_CLIENT_VERSION_1_8_1   = 0x1801,
+  CEC_CLIENT_VERSION_1_8_2   = 0x1802,
+  CEC_CLIENT_VERSION_1_9_0   = 0x1900,
+  CEC_CLIENT_VERSION_1_99_0  = 0x1990,
+  CEC_CLIENT_VERSION_2_0_0   = 0x2000,
+  CEC_CLIENT_VERSION_2_0_1   = 0x2001,
+  CEC_CLIENT_VERSION_2_0_2   = 0x2002,
+  CEC_CLIENT_VERSION_2_0_3   = 0x2003,
+  CEC_CLIENT_VERSION_2_0_4   = 0x2004,
+  CEC_CLIENT_VERSION_2_0_5   = 0x2005,
+  CEC_CLIENT_VERSION_CURRENT = 0x2005
 } cec_client_version;
 
 typedef enum cec_server_version
@@ -1190,21 +1399,37 @@ typedef enum cec_server_version
   CEC_SERVER_VERSION_1_5_3   = 0x1503,
   CEC_SERVER_VERSION_1_6_0   = 0x1600,
   CEC_SERVER_VERSION_1_6_1   = 0x1601,
-  CEC_SERVER_VERSION_1_6_2   = 0x1602
+  CEC_SERVER_VERSION_1_6_2   = 0x1602,
+  CEC_SERVER_VERSION_1_6_3   = 0x1603,
+  CEC_SERVER_VERSION_1_7_0   = 0x1700,
+  CEC_SERVER_VERSION_1_7_1   = 0x1701,
+  CEC_SERVER_VERSION_1_7_2   = 0x1702,
+  CEC_SERVER_VERSION_1_8_0   = 0x1800,
+  CEC_SERVER_VERSION_1_8_1   = 0x1801,
+  CEC_SERVER_VERSION_1_8_2   = 0x1802,
+  CEC_SERVER_VERSION_1_9_0   = 0x1900,
+  CEC_SERVER_VERSION_1_99_0  = 0x1990,
+  CEC_SERVER_VERSION_2_0_0   = 0x2000,
+  CEC_SERVER_VERSION_2_0_1   = 0x2001,
+  CEC_SERVER_VERSION_2_0_2   = 0x2002,
+  CEC_SERVER_VERSION_2_0_3   = 0x2003,
+  CEC_SERVER_VERSION_2_0_4   = 0x2004,
+  CEC_SERVER_VERSION_2_0_5   = 0x2005,
+  CEC_SERVER_VERSION_CURRENT = 0x2005
 } cec_server_version;
 
-typedef struct libcec_configuration
+struct libcec_configuration
 {
   uint32_t              clientVersion;        /*!< the version of the client that is connecting */
-  char                  strDeviceName[13];    /*!< how to name the device on the CEC bus */
-  cec_device_type_list  deviceTypes;          /*!< the CEC device types to emulate */
-  uint8_t               bAutodetectAddress;   /*!< try to autodetect the physical address when 1 */
-  uint16_t              iPhysicalAddress;     /*!< the physical address of the CEC adapter. only used when bAutodetectAddress = 0 or when the adapter doesn't support autodetection */
-  cec_logical_address   baseDevice;           /*!< the logical address of the device to which the adapter is connected. only used when iPhysicalAddress = 0 and bAutodetectAddress = 0 or when the adapter doesn't support autodetection */
-  uint8_t               iHDMIPort;            /*!< the HDMI port to which the adapter is connected. only used when iPhysicalAddress = 0 and bAutodetectAddress = 0 or when the adapter doesn't support autodetection */
+  char                  strDeviceName[13];    /*!< the device name to use on the CEC bus */
+  cec_device_type_list  deviceTypes;          /*!< the device type(s) to use on the CEC bus for libCEC */
+  uint8_t               bAutodetectAddress;   /*!< (read only) set to 1 by libCEC when the physical address was autodetected */
+  uint16_t              iPhysicalAddress;     /*!< the physical address of the CEC adapter */
+  cec_logical_address   baseDevice;           /*!< the logical address of the device to which the adapter is connected. only used when iPhysicalAddress = 0 or when the adapter doesn't support autodetection */
+  uint8_t               iHDMIPort;            /*!< the HDMI port to which the adapter is connected. only used when iPhysicalAddress = 0 or when the adapter doesn't support autodetection */
   uint64_t              tvVendor;             /*!< override the vendor ID of the TV. leave this untouched to autodetect */
-  cec_logical_addresses wakeDevices;          /*!< wake these CEC devices when initialising libCEC or when calling PowerOnDevices() without any parameter */
-  cec_logical_addresses powerOffDevices;      /*!< power off these devices when calling StandbyDevices() without any parameter */
+  cec_logical_addresses wakeDevices;          /*!< list of devices to wake when initialising libCEC or when calling PowerOnDevices() without any parameter. */
+  cec_logical_addresses powerOffDevices;      /*!< list of devices to power off when calling StandbyDevices() without any parameter. */
 
   uint32_t              serverVersion;        /*!< the version number of the server. read-only */
 
@@ -1219,12 +1444,18 @@ typedef struct libcec_configuration
   void *                callbackParam;        /*!< the object to pass along with a call of the callback methods. NULL to ignore */
   ICECCallbacks *       callbacks;            /*!< the callback methods to use. set this to NULL when not using callbacks */
 
-  cec_logical_addresses logicalAddresses;     /*!< the current logical addresses. read-only. added in 1.5.3 */
-  uint16_t              iFirmwareVersion;     /*!< the firmware version of the adapter. added in 1.6.0 */
+  cec_logical_addresses logicalAddresses;     /*!< (read-only) the current logical addresses. added in 1.5.3 */
+  uint16_t              iFirmwareVersion;     /*!< (read-only) the firmware version of the adapter. added in 1.6.0 */
   uint8_t               bPowerOffDevicesOnStandby; /*!< put devices in standby when the PC/player is put in standby. added in 1.6.0 */
   uint8_t               bShutdownOnStandby;   /*!< shutdown this PC when the TV is switched off. only used when bPowerOffOnStandby = 0. added in 1.6.0 */
   char                  strDeviceLanguage[3]; /*!< the menu language used by the client. 3 character ISO 639-2 country code. see http://http://www.loc.gov/standards/iso639-2/ added in 1.6.2 */
-  uint32_t              iFirmwareBuildDate;   /*!< the build date of the firmware, in seconds since epoch. if not available, this value will be set to 0. added in 1.6.2 */
+  uint32_t              iFirmwareBuildDate;   /*!< (read-only) the build date of the firmware, in seconds since epoch. if not available, this value will be set to 0. added in 1.6.2 */
+  uint8_t               bMonitorOnly;         /*!< won't allocate a CCECClient when starting the connection when set (same as monitor mode). added in 1.6.3 */
+  cec_version           cecVersion;           /*!< CEC spec version to use by libCEC. defaults to v1.4. added in 1.8.0 */
+  cec_adapter_type      adapterType;          /*!< type of the CEC adapter that we're connected to. added in 1.8.2 */
+  uint8_t               iDoubleTapTimeoutMs;  /*!< prevent double taps withing this timeout. defaults to 200ms. added in 2.0.0 */
+  cec_user_control_code comboKey;             /*!< key code that initiates combo keys. defaults to CEC_USER_CONTROL_CODE_F1_BLUE. CEC_USER_CONTROL_CODE_UNKNOWN to disable. added in 2.0.5 */
+  uint32_t              iComboKeyTimeoutMs;   /*!< timeout until the combo key is sent as normal keypress */
 
 #ifdef __cplusplus
    libcec_configuration(void) { Clear(); }
@@ -1232,32 +1463,35 @@ typedef struct libcec_configuration
 
   bool operator==(const libcec_configuration &other) const
   {
-    return (     clientVersion        == other.clientVersion &&
-        !strncmp(strDeviceName,          other.strDeviceName, 13) &&
-                 deviceTypes          == other.deviceTypes &&
-                 bAutodetectAddress   == other.bAutodetectAddress &&
-                 iPhysicalAddress     == other.iPhysicalAddress &&
-                 baseDevice           == other.baseDevice &&
-                 iHDMIPort            == other.iHDMIPort &&
-                 tvVendor             == other.tvVendor &&
-                 wakeDevices          == other.wakeDevices &&
-                 powerOffDevices      == other.powerOffDevices &&
-                 serverVersion        == other.serverVersion &&
-                 bGetSettingsFromROM  == other.bGetSettingsFromROM &&
-                 bUseTVMenuLanguage   == other.bUseTVMenuLanguage &&
-                 bActivateSource      == other.bActivateSource &&
-                 bPowerOffScreensaver == other.bPowerOffScreensaver &&
-                 bPowerOffOnStandby   == other.bPowerOffOnStandby &&
-                 bSendInactiveSource  == other.bSendInactiveSource &&
-        /* libcec 1.5.3+ */
-        (other.serverVersion < CEC_SERVER_VERSION_1_5_3 || logicalAddresses == other.logicalAddresses) &&
-        /* libcec 1.6.0+ */
-        (other.serverVersion < CEC_SERVER_VERSION_1_6_0 || iFirmwareVersion          == other.iFirmwareVersion) &&
-        (other.serverVersion < CEC_SERVER_VERSION_1_6_0 || bPowerOffDevicesOnStandby == other.bPowerOffDevicesOnStandby) &&
-        (other.serverVersion < CEC_SERVER_VERSION_1_6_0 || bShutdownOnStandby        == other.bShutdownOnStandby) &&
-        /* libcec 1.6.2+ */
-        (other.serverVersion < CEC_SERVER_VERSION_1_6_2 || !strncmp(strDeviceLanguage, other.strDeviceLanguage, 3)) &&
-        (other.serverVersion < CEC_SERVER_VERSION_1_6_2 || iFirmwareBuildDate       == other.iFirmwareBuildDate));
+    return (     clientVersion             == other.clientVersion &&
+        !strncmp(strDeviceName,               other.strDeviceName, 13) &&
+                  deviceTypes               == other.deviceTypes &&
+                  bAutodetectAddress        == other.bAutodetectAddress &&
+                  iPhysicalAddress          == other.iPhysicalAddress &&
+                  baseDevice                == other.baseDevice &&
+                  iHDMIPort                 == other.iHDMIPort &&
+                  tvVendor                  == other.tvVendor &&
+                  wakeDevices               == other.wakeDevices &&
+                  powerOffDevices           == other.powerOffDevices &&
+                  serverVersion             == other.serverVersion &&
+                  bGetSettingsFromROM       == other.bGetSettingsFromROM &&
+                  bUseTVMenuLanguage        == other.bUseTVMenuLanguage &&
+                  bActivateSource           == other.bActivateSource &&
+                  bPowerOffScreensaver      == other.bPowerOffScreensaver &&
+                  bPowerOffOnStandby        == other.bPowerOffOnStandby &&
+                  bSendInactiveSource       == other.bSendInactiveSource &&
+                  logicalAddresses          == other.logicalAddresses &&
+                  iFirmwareVersion          == other.iFirmwareVersion &&
+                  bPowerOffDevicesOnStandby == other.bPowerOffDevicesOnStandby &&
+                  bShutdownOnStandby        == other.bShutdownOnStandby &&
+        !strncmp(strDeviceLanguage,           other.strDeviceLanguage, 3) &&
+                  iFirmwareBuildDate        == other.iFirmwareBuildDate &&
+                  bMonitorOnly              == other.bMonitorOnly &&
+                  cecVersion                == other.cecVersion &&
+                  adapterType               == other.adapterType &&
+                  iDoubleTapTimeoutMs       == other.iDoubleTapTimeoutMs &&
+                  (other.clientVersion <= CEC_CLIENT_VERSION_2_0_4 || comboKey           == other.comboKey) &&
+                  (other.clientVersion <= CEC_CLIENT_VERSION_2_0_4 || iComboKeyTimeoutMs == other.iComboKeyTimeoutMs));
   }
 
   bool operator!=(const libcec_configuration &other) const
@@ -1274,9 +1508,9 @@ typedef struct libcec_configuration
     baseDevice = (cec_logical_address)CEC_DEFAULT_BASE_DEVICE;
     iHDMIPort =                       CEC_DEFAULT_HDMI_PORT;
     tvVendor =              (uint64_t)CEC_VENDOR_UNKNOWN;
-    clientVersion =         (uint32_t)CEC_CLIENT_VERSION_PRE_1_5;
-    serverVersion =         (uint32_t)CEC_SERVER_VERSION_PRE_1_5;
-    bAutodetectAddress =              CEC_DEFAULT_SETTING_AUTODETECT_ADDRESS;
+    clientVersion =         (uint32_t)CEC_CLIENT_VERSION_CURRENT;
+    serverVersion =         (uint32_t)CEC_SERVER_VERSION_CURRENT;
+    bAutodetectAddress =              0;
     bGetSettingsFromROM =             CEC_DEFAULT_SETTING_GET_SETTINGS_FROM_ROM;
     bUseTVMenuLanguage =              CEC_DEFAULT_SETTING_USE_TV_MENU_LANGUAGE;
     bActivateSource =                 CEC_DEFAULT_SETTING_ACTIVATE_SOURCE;
@@ -1288,9 +1522,15 @@ typedef struct libcec_configuration
     bPowerOffDevicesOnStandby =       CEC_DEFAULT_SETTING_POWER_OFF_DEVICES_STANDBY;
     memcpy(strDeviceLanguage,         CEC_DEFAULT_DEVICE_LANGUAGE, 3);
     iFirmwareBuildDate =              CEC_FW_BUILD_UNKNOWN;
+    bMonitorOnly =                    0;
+    cecVersion =         (cec_version)CEC_DEFAULT_SETTING_CEC_VERSION;
+    adapterType =                     ADAPTERTYPE_UNKNOWN;
+    iDoubleTapTimeoutMs =             CEC_DOUBLE_TAP_TIMEOUT_MS;
+    comboKey =                        CEC_USER_CONTROL_CODE_STOP;
+    iComboKeyTimeoutMs =              CEC_DEFAULT_COMBO_TIMEOUT_MS;
 
     memset(strDeviceName, 0, 13);
-    deviceTypes.clear();
+    deviceTypes.Clear();
     logicalAddresses.Clear();
     wakeDevices.Clear();
     powerOffDevices.Clear();
@@ -1306,16 +1546,7 @@ typedef struct libcec_configuration
     callbacks     = NULL;
   }
 #endif
-} libcec_configuration;
-
-#ifdef UNUSED
-#elif defined(__GNUC__)
-#define UNUSED(x) UNUSED_ ## x __attribute__((unused))
-#elif defined(__LCLINT__)
-#define UNUSED(x) /*@unused@*/ x
-#else
-#define UNUSED(x) x
-#endif
+};
 
 #ifdef __cplusplus
 };

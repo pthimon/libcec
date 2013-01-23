@@ -31,15 +31,15 @@
  *     http://www.pulse-eight.net/
  */
 
-#include "../os.h"
+#include "lib/platform/os.h"
 
 #if defined(__WINDOWS__)
-#include "../windows/os-threads.h"
+#include "lib/platform/windows/os-threads.h"
 #else
-#include "../posix/os-threads.h"
+#include "lib/platform/posix/os-threads.h"
 #endif
 
-#include "../util/timeutils.h"
+#include "lib/platform/util/timeutils.h"
 
 namespace PLATFORM
 {
@@ -51,7 +51,7 @@ namespace PLATFORM
 
   private:
     inline PreventCopy(const PreventCopy &c) { *this = c; }
-    inline PreventCopy &operator=(const PreventCopy &c){ *this = c; return *this; }
+    inline PreventCopy &operator=(const PreventCopy & UNUSED(c)){ return *this; }
   };
 
   template <typename _Predicate>
@@ -86,9 +86,12 @@ namespace PLATFORM
 
     inline bool Lock(void)
     {
-      MutexLock(m_mutex);
-      ++m_iLockCount;
-      return true;
+      if (MutexLock(m_mutex))
+      {
+        ++m_iLockCount;
+        return true;
+      }
+      return false;
     }
 
     inline void Unlock(void)

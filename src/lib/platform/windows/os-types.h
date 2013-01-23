@@ -49,7 +49,6 @@
 #include <errno.h>
 #include <stddef.h>
 #include <process.h>
-#include <stdint.h>
 
 typedef SOCKET tcp_socket_t;
 #define INVALID_SOCKET_VALUE        INVALID_SOCKET
@@ -66,6 +65,7 @@ typedef _W64 int   ssize_t;
 #endif
 
 #define snprintf _snprintf
+#define strdup _strdup
 
 #if defined(_MSC_VER)
 #pragma warning (push)

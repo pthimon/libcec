@@ -31,16 +31,19 @@
  *     http://www.pulse-eight.net/
  */
 
+#include <stdint.h>
+
 namespace PLATFORM
 {
   #define thread_t                                 HANDLE
+  #define INVALID_THREAD_VALUE                     NULL
   #define ThreadsWait(thread, retVal)              (::WaitForSingleObject(thread, INFINITE) < 0)
   #define ThreadsCreate(thread, func, arg)         ((thread = ::CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, arg, 0, NULL)) == NULL ? false : true)
 
   typedef CRITICAL_SECTION* mutex_t;
   #define MutexCreate(mutex)                       ::InitializeCriticalSection(mutex = new CRITICAL_SECTION)
   #define MutexDelete(mutex)                       ::DeleteCriticalSection(mutex); delete mutex
-  #define MutexLock(mutex)                         ::EnterCriticalSection(mutex)
+  inline bool MutexLock(mutex_t mutex)             {::EnterCriticalSection(mutex); return true; }
   #define MutexTryLock(mutex)                      (::TryEnterCriticalSection(mutex) != 0)
   #define MutexUnlock(mutex)                       ::LeaveCriticalSection(mutex)
 

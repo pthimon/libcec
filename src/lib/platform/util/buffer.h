@@ -31,7 +31,7 @@
  *     http://www.pulse-eight.net/
  */
 
-#include "../threads/mutex.h"
+#include "lib/platform/threads/mutex.h"
 #include <queue>
 
 namespace PLATFORM
@@ -54,6 +54,7 @@ namespace PLATFORM
         CLockObject lock(m_mutex);
         while (!m_buffer.empty())
           m_buffer.pop();
+        m_bHasMessages = true;
         m_condition.Broadcast();
       }
 
@@ -94,11 +95,11 @@ namespace PLATFORM
         }
 
         // pop the first item
+        m_bHasMessages = !m_buffer.empty();
         if (!m_buffer.empty())
         {
           entry = m_buffer.front();
           m_buffer.pop();
-          m_bHasMessages = !m_buffer.empty();
           bReturn = true;
         }
         return bReturn;

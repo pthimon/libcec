@@ -8,16 +8,15 @@ library_include_HEADERS = ../../include/cec.h \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libcec.pc
 
+## libCEC core
 libcec_la_SOURCES = CECProcessor.cpp \
                     LibCEC.cpp \
                     LibCECC.cpp \
-                    adapter/USBCECAdapterCommands.cpp \
-                    adapter/USBCECAdapterCommunication.cpp \
-                    adapter/USBCECAdapterDetection.cpp \
-                    adapter/USBCECAdapterMessage.cpp \
-                    adapter/USBCECAdapterMessageQueue.cpp \
+                    CECClient.cpp \
+                    adapter/AdapterFactory.cpp \
                     devices/CECAudioSystem.cpp \
                     devices/CECBusDevice.cpp \
+                    devices/CECDeviceMap.cpp \
                     devices/CECPlaybackDevice.cpp \
                     devices/CECRecordingDevice.cpp \
                     devices/CECTuner.cpp \
@@ -27,7 +26,36 @@ libcec_la_SOURCES = CECProcessor.cpp \
                     implementations/SLCommandHandler.cpp \
                     implementations/VLCommandHandler.cpp \
                     implementations/RLCommandHandler.cpp \
-                    platform/posix/serialport.cpp
+                    implementations/PHCommandHandler.cpp
 
-libcec_la_LDFLAGS = @LIBS@ -version-info @VERSION@
-libcec_la_CPPFLAGS = -I@abs_top_srcdir@/include
+## server sockets, currently unused
+##libcec_la_SOURCES += platform/posix/serversocket.cpp
+
+## Pulse-Eight USB-CEC support
+if USE_P8_USB
+libcec_la_SOURCES += adapter/Pulse-Eight/USBCECAdapterMessage.cpp \
+                     adapter/Pulse-Eight/USBCECAdapterCommands.cpp \
+                     adapter/Pulse-Eight/USBCECAdapterCommunication.cpp \
+                     adapter/Pulse-Eight/USBCECAdapterMessageQueue.cpp \
+                     adapter/Pulse-Eight/USBCECAdapterDetection.cpp \
+                     platform/posix/serialport.cpp \
+                     platform/posix/os-edid.cpp \
+                     platform/adl/adl-edid.cpp \
+                     platform/nvidia/nv-edid.cpp
+endif
+
+## Raspberry Pi support
+if USE_RPI_API
+libcec_la_SOURCES += adapter/RPi/RPiCECAdapterDetection.cpp \
+                     adapter/RPi/RPiCECAdapterCommunication.cpp \
+                     adapter/RPi/RPiCECAdapterMessageQueue.cpp
+endif
+
+## CuBox (NXP) support
+if USE_TDA995X_API
+libcec_la_SOURCES += adapter/TDA995x/TDA995xCECAdapterDetection.cpp \
+                     adapter/TDA995x/TDA995xCECAdapterCommunication.cpp
+endif
+
+
+libcec_la_LDFLAGS = @LIBS_LIBCEC@ -version-info @VERSION@

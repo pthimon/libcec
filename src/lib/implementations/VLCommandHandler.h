@@ -38,20 +38,33 @@ namespace CEC
   class CVLCommandHandler : public CCECCommandHandler
   {
   public:
-    CVLCommandHandler(CCECBusDevice *busDevice);
+    CVLCommandHandler(CCECBusDevice *busDevice,
+                      int32_t iTransmitTimeout = CEC_DEFAULT_TRANSMIT_TIMEOUT,
+                      int32_t iTransmitWait = CEC_DEFAULT_TRANSMIT_WAIT,
+                      int8_t iTransmitRetries = CEC_DEFAULT_TRANSMIT_RETRIES,
+                      int64_t iActiveSourcePending = 0);
     virtual ~CVLCommandHandler(void) {};
 
     bool InitHandler(void);
 
-    bool HandleDeviceVendorCommandWithId(const cec_command &command);
-    bool TransmitActiveSource(const cec_logical_address iInitiator, uint16_t iPhysicalAddress);
-    bool TransmitPendingActiveSourceCommands(void);
+    int HandleDeviceVendorCommandWithId(const cec_command &command);
+    int HandleStandby(const cec_command &command);
+    int HandleSystemAudioModeRequest(const cec_command &command);
 
+    int HandleVendorCommand(const cec_command &command);
     bool PowerUpEventReceived(void);
+    bool SupportsDeviceType(const cec_device_type type) const { return type != CEC_DEVICE_TYPE_RECORDING_DEVICE; };
+    cec_device_type GetReplacementDeviceType(const cec_device_type type) const { return type == CEC_DEVICE_TYPE_RECORDING_DEVICE ? CEC_DEVICE_TYPE_PLAYBACK_DEVICE : type; }
 
-  private:
+    bool SourceSwitchAllowed(void);
+
+  protected:
+    void VendorPreActivateSourceHook(void);
+    void SendVendorCommandCapabilities(const cec_logical_address initiator, const cec_logical_address destination);
+    int HandleReportPowerStatus(const cec_command &command);
+
     PLATFORM::CMutex m_mutex;
-    bool             m_bActiveSourcePending;
-    bool             m_bPowerUpEventReceived;
+    uint64_t         m_iPowerUpEventReceived;
+    bool             m_bCapabilitiesSent;
   };
 };

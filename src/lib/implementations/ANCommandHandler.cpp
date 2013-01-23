@@ -30,73 +30,55 @@
  *     http://www.pulse-eight.net/
  */
 
+#include "env.h"
 #include "ANCommandHandler.h"
-#include "../devices/CECBusDevice.h"
-#include "../CECProcessor.h"
-#include "../LibCEC.h"
+
+#include "lib/devices/CECBusDevice.h"
+#include "lib/CECProcessor.h"
+#include "lib/LibCEC.h"
+#include "lib/CECClient.h"
 
 using namespace CEC;
 
-CANCommandHandler::CANCommandHandler(CCECBusDevice *busDevice) :
-    CCECCommandHandler(busDevice)
+#define LIB_CEC     m_busDevice->GetProcessor()->GetLib()
+#define ToString(p) LIB_CEC->ToString(p)
+
+CANCommandHandler::CANCommandHandler(CCECBusDevice *busDevice,
+                                     int32_t iTransmitTimeout /* = CEC_DEFAULT_TRANSMIT_TIMEOUT */,
+                                     int32_t iTransmitWait /* = CEC_DEFAULT_TRANSMIT_WAIT */,
+                                     int8_t iTransmitRetries /* = CEC_DEFAULT_TRANSMIT_RETRIES */,
+                                     int64_t iActiveSourcePending /* = 0 */) :
+    CCECCommandHandler(busDevice, iTransmitTimeout, iTransmitWait, iTransmitRetries, iActiveSourcePending)
 {
   m_vendorId = CEC_VENDOR_SAMSUNG;
   m_bOPTSendDeckStatusUpdateOnActiveSource = false;
 }
 
-bool CANCommandHandler::HandleVendorRemoteButtonDown(const cec_command &command)
+int CANCommandHandler::HandleVendorRemoteButtonDown(const cec_command &command)
 {
-  if (m_processor->IsRunning() && command.parameters.size > 0)
-  {
-    cec_keypress key;
-    key.duration = CEC_BUTTON_TIMEOUT;
-    key.keycode = CEC_USER_CONTROL_CODE_UNKNOWN;
+  if (command.parameters.size == 0)
+    return CEC_ABORT_REASON_INVALID_OPERAND;
 
-    switch (command.parameters[0])
-    {
-    case CEC_USER_CONTROL_CODE_AN_RETURN:
-      key.keycode = m_processor->GetClientVersion() >= CEC_CLIENT_VERSION_1_5_0 ?
-        CEC_USER_CONTROL_CODE_AN_RETURN :
-        CEC_USER_CONTROL_CODE_EXIT;
-      break;
-    case CEC_USER_CONTROL_CODE_AN_CHANNELS_LIST:
-      key.keycode = CEC_USER_CONTROL_CODE_AN_CHANNELS_LIST;
-      break;
-    default:
-      break;
-    }
+  if (!m_processor->CECInitialised())
+    return CEC_ABORT_REASON_NOT_IN_CORRECT_MODE_TO_RESPOND;
 
-    if (key.keycode != CEC_USER_CONTROL_CODE_UNKNOWN)
-      CLibCEC::AddKey(key);
-  }
+  CCECClient *client = m_processor->GetClient(command.destination);
+  if (!client)
+    return CEC_ABORT_REASON_NOT_IN_CORRECT_MODE_TO_RESPOND;
 
-  return true;
+  cec_keypress key;
+  key.duration = CEC_BUTTON_TIMEOUT;
+  key.keycode = (cec_user_control_code)command.parameters[0];
+
+  if (client)
+    client->AddKey(key);
+
+  return COMMAND_HANDLED;
 }
 
-bool CANCommandHandler::HandleCommand(const cec_command &command)
+int CANCommandHandler::HandleVendorRemoteButtonUp(const cec_command &command)
 {
-  bool bHandled(false);
-  if (m_busDevice->MyLogicalAddressContains(command.destination))
-  {
-    switch(command.opcode)
-    {
-    case CEC_OPCODE_VENDOR_REMOTE_BUTTON_DOWN:
-      bHandled = true;
-      HandleVendorRemoteButtonDown(command);
-      break;
-    case CEC_OPCODE_VENDOR_REMOTE_BUTTON_UP:
-      bHandled = true;
-      HandleUserControlRelease(command);
-      break;
-    default:
-      break;
-    }
-  }
-
-  if (!bHandled)
-    bHandled = CCECCommandHandler::HandleCommand(command);
-
-  return bHandled;
+  return HandleUserControlRelease(command);
 }
 
 bool CANCommandHandler::PowerOn(const cec_logical_address iInitiator, const cec_logical_address iDestination)
