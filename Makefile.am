@@ -1,4 +1,4 @@
-SUBDIRS = src/lib src/testclient src/cec-config src/lircclient
+SUBDIRS = src/lib src/testclient src/lircclient
 
 docs:
 	echo "Updating documentation (if doxygen is present)"
