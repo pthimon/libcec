@@ -946,8 +946,9 @@ void CCECClient::AddCommand(const cec_command &command)
   if (command.destination == CECDEVICE_BROADCAST || GetLogicalAddresses().IsSet(command.destination))
   {
     LIB_CEC->AddLog(CEC_LOG_DEBUG, ">> %s (%X) -> %s (%X): %s (%2X)", ToString(command.initiator), command.initiator, ToString(command.destination), command.destination, ToString(command.opcode), command.opcode);
-    CallbackAddCommand(command);
   }
+//SB: Notify me of ALL commands, not just those addressed to me  
+  CallbackAddCommand(command);
 }
 
 int CCECClient::MenuStateChanged(const cec_menu_state newState)
