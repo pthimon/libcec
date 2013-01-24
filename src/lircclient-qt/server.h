@@ -14,12 +14,7 @@ public:
 	Server(CEC::ICECAdapter *parser, QObject * parent = 0);
 	~Server();
 	
-	void emitVolumeUp();
-	void emitVolumeDown();
 	void disconnected(Conn*);
-signals:
-	void volumeUp();
-	void volumeDown();
 public slots:
 	void newConnection();
 	void volumeUpdate(int);

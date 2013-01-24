@@ -20,16 +20,8 @@ void Server::newConnection() {
   std::cout << "Got Connection" << std::endl;
   QTcpSocket* tcp = sock->nextPendingConnection();
   
-  Conn *conn = new Conn(this, tcp);
+  Conn *conn = new Conn(this, tcp, cec);
   connections.append(conn);
-}
-
-void Server::emitVolumeUp() {
-  cec->VolumeUp();
-}
-
-void Server::emitVolumeDown() {
-  cec->VolumeDown();
 }
 
 // Received a new volume update from the amp via libcec

@@ -3,13 +3,15 @@
 
 #include <QTcpSocket>
 
+#include "../../include/cec.h"
+
 class Server;
 
 class Conn : public QObject
 {
 	Q_OBJECT
 public:
-	Conn(Server *server, QTcpSocket *conn);
+	Conn(Server *server, QTcpSocket *conn, CEC::ICECAdapter *cec);
 	~Conn();
 	void send(int);
 public slots:
@@ -19,6 +21,7 @@ public slots:
 private:
 	Server *server;
 	QTcpSocket *conn;
+	CEC::ICECAdapter *cec;
 };
 
 #endif // SERVER_H

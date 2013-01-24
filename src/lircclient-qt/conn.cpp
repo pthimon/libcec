@@ -3,9 +3,10 @@
 
 #include <QByteArray>
 
-Conn::Conn(Server *server, QTcpSocket *conn) : QObject(server) {
+Conn::Conn(Server *server, QTcpSocket *conn, CEC::ICECAdapter *cec) : QObject(server) {
   this->server = server;
   this->conn = conn;
+  this->cec = cec;
   
   connect(conn, SIGNAL(readyRead()), this, SLOT(req()));
   connect(conn, SIGNAL(disconnected()), this, SLOT(disconnected()));
@@ -24,11 +25,20 @@ void Conn::req() {
   // parse req from conn
   QByteArray ba = conn->readAll();
   
-  foreach(const char c, ba) {
-    if (c == 'U') {
-      server->emitVolumeUp();
-    } else if (c == 'D') {
-      server->emitVolumeDown();
+  // check that the TV is on
+  CEC::cec_power_status iPower = cec->GetDevicePowerStatus(CEC::CECDEVICE_TV);
+  if (iPower == CEC::CEC_POWER_STATUS_STANDBY) {
+    conn->write("Off\n");
+  } else {
+    foreach(const char c, ba) {
+      if (c == 'U') {
+	cec->VolumeUp();
+      } else if (c == 'D') {
+	cec->VolumeDown();
+      } else if (c == 'M') {
+	cec->MuteAudio();
+	conn->write("Mute\n");
+      }
     }
   }
 }
