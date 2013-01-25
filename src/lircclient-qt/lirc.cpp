@@ -76,7 +76,7 @@ void Lirc::update(void) {
 	  } else if (strcmp(c,"CEC_VOLDOWN")==0) {
 	      displayVolume(parser->VolumeDown());
 	  } else if (strcmp(c,"CEC_MUTE")==0) {
-	     displayVolume(parser->MuteAudio());
+	     displayVolume(parser->AudioToggleMute());
 	  }
 	  // Playstation controls
 	  else if (strcmp(c,"CEC_UP")==0) {
