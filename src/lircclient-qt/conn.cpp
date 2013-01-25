@@ -36,8 +36,13 @@ void Conn::req() {
       } else if (c == 'D') {
 	cec->VolumeDown();
       } else if (c == 'M') {
-	cec->MuteAudio();
+	cec->AudioMute();
 	conn->write("Mute\n");
+      } else if (c == 'N') {
+	cec->AudioUnmute();
+      } else if (c == 'V') {
+	int vol = cec->AudioStatus();
+	conn->write(QString::number(vol).toLatin1() + "\n");
       }
     }
   }
